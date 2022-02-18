@@ -7,6 +7,8 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 
+from .models import Member
+
 def login_user(request):
     if request.method == 'POST':
         username = request.POST['username']
@@ -40,6 +42,7 @@ def singup_user(request):
                         'user_already_exists': True
                     })
                 else:
+                    Member.objects.create(user=user, bio='Hello everyone, i\'m using ForumsApp!')
                     login(request, user)
                     return HttpResponseRedirect(reverse('members:feed'))
             else:
@@ -59,9 +62,21 @@ def logout_user(request):
 
 
 @login_required
+def show_profile(request):
+    return render(request, 'members/profile.html', {
+        'user_name': request.user.username,
+        'bio_content': Member.objects.get(pk=request.user).bio,
+        'is_owner': True
+    })
+
+
+@login_required
+def edit_profile(request):
+    pass
+
+
+@login_required
 def user_feed(request):
-    print(f'{request.user.username}')
-    print(f'{request.user.pk}')
     return render(request, 'members/feed.html', {
         'user_name': request.user.username
     })
