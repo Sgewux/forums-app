@@ -8,6 +8,7 @@ urlpatterns = [
     path('auth/singup/', views.singup_user, name='singup'),
     path('profile/', views.show_profile, name='profile'),
     path('profile/edit', views.edit_profile, name='edit_profile'),
-    #path('members/<int:member_id>')
+    path('profile/delete', views.delete_account, name='delete_account'),
+    path('members/<str:member_username>', views.show_member, name='show_member'),
     path('feed/', views.user_feed, name='feed')
 ]

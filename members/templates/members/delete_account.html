@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Account</title>
+</head>
+<body>
+    <h1>Danger Zone!</h1>
+    <p>You're about to: <strong>delete your account in a permanent way!</strong> 
+        afeter pressing "delete account" button with your correct password you wont be able to login again!
+    </p>
+
+    <form action={% url 'members:delete_account' %} method="post">
+        {% csrf_token %}
+        <label for="password">Password</label>
+        <input type="password" name="password">
+        {% if wrong_password %}
+        <strong>You wrote the wrong pasword! seems like you don't really want to leave...</strong>
+        {% endif %}
+        <input type="submit" value="Delete Account">
+    </form>
+
+    <p>We're gonna mis you :(</p>
+</body>
+</html>

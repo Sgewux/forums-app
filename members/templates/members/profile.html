@@ -8,7 +8,8 @@
 </head>
 <body>
     <h1>{{ user_name }}</h1>
-    <br>
+    <hr>
+    <h2>Bio</h2>
     <p>{{ bio_content }}</p>
     {% if is_owner %}
         <a href={% url 'members:edit_profile' %}>Edit Bio?</a> 
