@@ -130,9 +130,55 @@ class ShowMemberViewTests(TestCase):
         self.assertNotContains(response, 'Edit Bio?')
 
 
-class UpdateProfileViewTests(TestCase):
-    pass
+class EditProfileViewTests(TestCase):
+    def test_edit_profile_works_correctly(self):
+        '''The profile's bio is actually updated'''
+        
+        user = User(username='jose')
+        user.set_password('1234')
+        user.save()
+        Member.objects.create(user=user, bio='firstbio')
+        self.client.login(username='jose', password='1234')
+
+        response = self.client.post(reverse('members:edit_profile'),
+        {
+            'new_bio':'secondbio'
+        }, follow=True)
+        self.client.logout()
+
+        self.assertEqual(response.redirect_chain[0][1], 302)
+        self.assertContains(response, 'secondbio')
+        self.assertEqual(
+            Member.objects.get(user__username='jose').bio,
+            'secondbio')
 
 
 class DeleteAccountTests(TestCase):
-    pass
+    def test_delete_account_works(self):
+        '''test if the account is actually deleted'''
+        user = User(username='josejose')
+        user.set_password('1234')
+        user.save()
+        Member.objects.create(user=user, bio='firstbio')
+
+        self.client.login(username='josejose', password='1234')
+        self.client.post(reverse('members:delete_account'), {'password':'1234'})
+
+        self.assertIs(User.objects.all().contains(user), False)  # queryset.contains() is available since Django 4.0
+    
+    def test_wrong_password_in_delete_form(self):
+        '''If user wrote a wrong password a funny message should be displayed'''
+
+        user = User(username='josecarlos')
+        user.set_password('1234')
+        user.save()
+        Member.objects.create(user=user, bio='firstbio')
+
+        self.client.login(username='josecarlos', password='1234')
+        response = self.client.post(reverse('members:delete_account'), 
+        {
+            'password':'wrongpasswd'
+        })
+        
+        self.assertContains(response, 
+        'You wrote the wrong pasword! seems like you don\'t really want to leave...')

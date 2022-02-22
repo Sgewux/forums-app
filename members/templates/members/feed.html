@@ -10,7 +10,15 @@
     <header>
         <a href="{% url 'members:logout' %}">Logout</a>
     </header>
-    <h1>Welcome to your Feed {{ user_name }}!</h1>
-    <p>your feed is suposed to be here</p>
+    <h1>Welcome to your Feed {{ request.user.username }}!</h1>
+    {% if latest_posts %}
+        {% for post in latest_posts %}
+            <hr>
+            <h2>{{ post.title }}</h2>
+            <h3>Posted in: {{ post.forum.name }}</h3>
+            <h3>Posted by: {{ post.poster.user.username }} </h3>
+            <p>{{ post.content }}</p>
+        {% endfor %}
+    {% endif %}   
 </body>
 </html>

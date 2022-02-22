@@ -7,6 +7,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 
+from forums.models import Post
 from .models import Member
 
 def login_user(request):
@@ -106,8 +107,12 @@ def delete_account(request):
 
 @login_required
 def user_feed(request):
+    latest_posts = Post.objects.raw(
+            f'SELECT * FROM forums_post WHERE forum_id IN \
+            (SELECT forum_id FROM forums_forum_members WHERE member_id = {request.user.pk})\
+            ORDER BY pub_date DESC LIMIT 1;')
     return render(request, 'members/feed.html', {
-        'user_name': request.user.username
+        'latest_posts': latest_posts
     })
 
 
