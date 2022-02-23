@@ -59,8 +59,7 @@ def singup_user(request):
 
 def logout_user(request):
     logout(request)
-    # to do: redirect to the /forums page once its created
-    return HttpResponse('forums')
+    return HttpResponseRedirect(reverse('forums:forums_home'))
 
 
 @login_required
@@ -94,7 +93,7 @@ def delete_account(request):
             logout(request)
             former_user.delete()
 
-            return HttpResponse('deleted user will be redirected to /forms')
+            return HttpResponseRedirect(reverse('forms:forms_home'))
         
         else:
             return render(request, 'members/delete_account.html', {
@@ -108,9 +107,10 @@ def delete_account(request):
 @login_required
 def user_feed(request):
     latest_posts = Post.objects.raw(
-            f'SELECT * FROM forums_post WHERE forum_id IN \
+            f'SELECT * FROM forums_post WHERE id IN \
+            (SELECT MAX(id) FROM forums_post WHERE forum_id IN \
             (SELECT forum_id FROM forums_forum_members WHERE member_id = {request.user.pk})\
-            ORDER BY pub_date DESC LIMIT 1;')
+            GROUP BY forum_id);')
     return render(request, 'members/feed.html', {
         'latest_posts': latest_posts
     })

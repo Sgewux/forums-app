@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to ForumsApp</title>
+</head>
+<body>
+
+    <header>
+        <a href="{% url 'members:singup' %}">Create Account</a>
+        <a href="{% url 'members:login' %}">LogIn</a>
+    </header>
+    <h1>Wecome to ForumsApp</h1>
+    <p>We got a lot of amazing communities for you to join</p>
+    
+    <form action={% url 'forums:forums_home' %} method="get">
+        <input type="text" name="q" id="q" placeholder="Search a forum">
+        <input type="submit" value="Search">
+    </form>
+    <hr>
+
+    {% if forums_list %}
+        {% for forum in forums_list %}
+            <div class="forum_container">
+                <h2>{{ forum.name }}</h2>
+                <p>{{forum.description}}</p>
+            </div>
+        {% endfor %}
+    {% else %}
+            <p>No forums available.</p>
+    {% endif %}
+</body>
+</html>
