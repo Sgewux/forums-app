@@ -24,9 +24,10 @@
     {% if forums_list %}
         {% for forum in forums_list %}
             <div class="forum_container">
-                <h2>{{ forum.name }}</h2>
+                <h2><a href= "{% url 'forums:show_forum' forum.name %}"> {{ forum.name }} </a></h2>
                 <p>{{forum.description}}</p>
             </div>
+            <hr>
         {% endfor %}
     {% else %}
             <p>No forums available.</p>

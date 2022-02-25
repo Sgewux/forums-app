@@ -93,7 +93,7 @@ def delete_account(request):
             logout(request)
             former_user.delete()
 
-            return HttpResponseRedirect(reverse('forms:forms_home'))
+            return HttpResponseRedirect(reverse('forums:forums_home'))
         
         else:
             return render(request, 'members/delete_account.html', {

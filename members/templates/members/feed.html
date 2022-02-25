@@ -15,8 +15,9 @@
         {% for post in latest_posts %}
             <hr>
             <h2>{{ post.title }}</h2>
-            <h3>Posted in: {{ post.forum.name }}</h3>
-            <h3>Posted by: {{ post.poster.user.username }} </h3>
+            <strong>Posted in: <a href= {% url 'forums:show_forum' post.forum.name%}>{{ post.forum.name }}</a> </strong>
+            <br>
+            <strong>Posted by: <a href= {% url 'members:show_member' post.poster.user.username%}>{{ post.poster.user.username }}</a> </strong>
             <p>{{ post.content }}</p>
         {% endfor %}
     {% endif %}   

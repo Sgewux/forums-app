@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ forum.name }}</title>
+</head>
+<body>
+    <h1>{{ forum.name }}</h1>
+    <hr>
+
+    <div class="about">
+        <h3>About the comunity</h3>
+        <p>{{ forum.description }}</p>
+        <strong>Created by: <a href= {% url 'members:show_member' forum.owner.username%}>{{ forum.owner.username }}</a></strong>
+        <br>
+        <strong>Created at: {{ forum.creation_date }}</strong>
+        <br>
+        <strong>{{ forum.members.count }} member{{ forum.members.count | pluralize }}</strong>
+        <br>
+        {% if member_belongs %}
+            <a href="{% url 'forums:leave_forum' forum.name %}">Leave comunity</a>
+        {% else %}
+            <a href="{% url 'forums:join_forum' forum.name %}">Join comunity</a>
+        {% endif %}
+    </div>
+    <hr>
+
+    <form action="" method="get">
+        <input type="text" name="post_title" placeholder="search in {{ forum.name }}">
+        <input type="submit">
+    </form>
+    
+    <div class="posts">
+        {% for post in most_recent_posts %}
+            <div class="post">
+                <h3>{{ post.title }}</h3>
+                <p>{{ post.content }} <br> <strong>{{ post.points }} point{{ post.points | pluralize}}</strong></p>
+                <a href="">See comments</a>
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

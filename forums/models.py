@@ -5,7 +5,7 @@ from members.models import Member
 
 class Forum(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=15)
+    name = models.CharField(max_length=15, unique=True)
     description = models.CharField(max_length=255)
     creation_date = models.DateField('creation_date', auto_now_add=True)
     members = models.ManyToManyField(Member)
