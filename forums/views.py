@@ -1,4 +1,6 @@
+from django.db.models import Q
 from django.urls import reverse
+from django.db.utils import IntegrityError
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -20,14 +22,23 @@ def show_forums(request):
 
 def show_forum(request, forum_name):
     forum = get_object_or_404(Forum, name=forum_name)
-    belongs = False
     if request.user.is_authenticated:
         member = request.user.member
         belongs = forum.members.all().contains(member)
+    else:
+        belongs = False
+    
+    if request.GET.get('q'):
+        posts = forum.post_set.filter(
+            Q(title__icontains = request.GET['q']) | 
+            Q(content__icontains = request.GET['q'])
+            ).order_by('points')
+    else:
+        posts = forum.post_set.order_by('-pub_date')[:15]
 
     return render(request, 'forums/forum.html', {
         'forum': forum,
-        'most_recent_posts': forum.post_set.order_by('-pub_date')[:15],
+        'posts_to_show': posts,
         'member_belongs': belongs
     })
 
@@ -50,3 +61,28 @@ def leave_forum(request, forum_name):
         forum.members.remove(request.user.member)
     
     return HttpResponseRedirect(reverse('forums:show_forum', args=(forum_name,)))
+
+
+@login_required
+def create_forum(request):
+    if request.method == 'POST':
+        try:
+            forum = Forum(
+                owner=request.user, 
+                name=request.POST['forum_name'],
+                description=request.POST['description']
+                )
+            forum.save()
+        except IntegrityError as e:
+            # todo: once i switch to postgres i got to add here the logic for
+            # a name or desc which uses a greather than permited lenght
+            return render(request, 'forums/create_forum.html', {
+                'already_used_name': True
+            })
+        else:
+            forum.members.add(request.user.member)
+            return HttpResponseRedirect(reverse('forums:show_forum', 
+            args=(request.POST['forum_name'],))
+            )
+    else:
+        return render(request, 'forums/create_forum.html', {})

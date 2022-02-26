@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum Creation</title>
+</head>
+<body>
+    <form action={% url 'forums:create_forum' %} method="post">
+        {% csrf_token %}
+        <fieldset>
+            <legend><h1>Forum Creation</h1></legend>
+
+            <label for="forum_name">Forum name:</label>
+            <input type="text" name="forum_name">
+            
+            {% if already_used_name %}
+                <strong>We already have a forum with that name.</strong>
+            {% endif %}
+
+            <label for="description">Description:</label>
+            <input type="text" name="description">
+
+        </fieldset>
+
+        <input type="submit">
+    </form>
+
+</body>
+</html>

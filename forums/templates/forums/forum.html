@@ -28,18 +28,23 @@
     <hr>
 
     <form action="" method="get">
-        <input type="text" name="post_title" placeholder="search in {{ forum.name }}">
+        <input type="text" name="q" placeholder="search in {{ forum.name }}">
         <input type="submit">
     </form>
     
     <div class="posts">
-        {% for post in most_recent_posts %}
-            <div class="post">
-                <h3>{{ post.title }}</h3>
-                <p>{{ post.content }} <br> <strong>{{ post.points }} point{{ post.points | pluralize}}</strong></p>
-                <a href="">See comments</a>
-            </div>
-        {% endfor %}
+        {% if posts_to_show %}
+            {% for post in posts_to_show %}
+                <div class="post">
+                    <h3>{{ post.title }}</h3>
+                    <p>{{ post.content }} <br> <strong>{{ post.points }} point{{ post.points | pluralize}}</strong></p>
+                    <a href="">See comments</a>
+                </div>
+            {% endfor %}
+        {% else %}
+                <h2>No posts :(</h2>
+        {% endif %}
+
     </div>
 </body>
 </html>
