@@ -2,11 +2,12 @@ from django.db.models import Q
 from django.urls import reverse
 from django.db.utils import IntegrityError
 from django.http import HttpResponseRedirect
+from django.views.generic.detail import DetailView
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 
 from members.models import Member
-from .models import Forum
+from .models import Forum, Post
 
 def show_forums(request):
     like = request.GET.get('q', None)
@@ -86,3 +87,10 @@ def create_forum(request):
             )
     else:
         return render(request, 'forums/create_forum.html', {})
+
+
+
+class PostDetailView(DetailView):
+    model = Post
+    context_object_name = 'post'
+    template_name = 'forums/post.html'

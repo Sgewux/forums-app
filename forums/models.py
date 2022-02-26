@@ -34,3 +34,20 @@ class Post(models.Model):
     #     permissions = [
     #         ('comment', 'Can send coments to the post')
     #     ]
+
+
+# class Postvote(models.Model):
+#     POST_UPVOTE = 'U'
+#     POST_DOWNVOTE = 'D'
+
+#     KIND_OF_VOTE_CHOICES = [
+#         (POST_UPVOTE, 'upvote'),
+#         (POST_DOWNVOTE, 'downvote')
+#     ]
+
+#     user = models.ForeignKey(User, on_delete=models.CASCADE)
+#     post = models.ForeignKey(Post, on_delete=models.CASCADE)
+#     kind_of_vote = models.CharField(
+#         max_length=1, 
+#         choices=KIND_OF_VOTE_CHOICES
+#         )

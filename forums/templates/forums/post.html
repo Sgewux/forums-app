@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ post.title }}</title>
+</head>
+<body>
+    <h1>{{ post.title }}</h1>
+    <hr>
+    <div class="post_info">
+        <strong>Posted in: <a href={% url 'forums:show_forum' post.forum.name %}>{{ post.forum.name }}</a></strong>
+        <br>
+        <strong>Posted at: {{ post.pub_date |date:'l, j M Y H:i'}}</strong>
+        <br>
+        <strong>Posted by: <a href={% url 'members:show_member' post.poster.user.username%}> {{ post.poster.user.username }} </a></strong>
+        <br>
+        <strong> {{ post.points }} Point{{post.points | pluralize}}</strong>
+    </div>
+    
+    <div class="post_content">
+        <p> {{ post.content }} </p>
+    </div>
+
+    <!--todo: show comments here-->
+
+</body>
+</html>

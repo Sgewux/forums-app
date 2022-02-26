@@ -14,7 +14,7 @@
     {% if latest_posts %}
         {% for post in latest_posts %}
             <hr>
-            <h2>{{ post.title }}</h2>
+            <h2><a href={% url 'forums:show_post' post.pk%}>{{ post.title }}</a></h2>
             <strong>Posted in: <a href= {% url 'forums:show_forum' post.forum.name%}>{{ post.forum.name }}</a> </strong>
             <br>
             <strong>Posted by: <a href= {% url 'members:show_member' post.poster.user.username%}>{{ post.poster.user.username }}</a> </strong>

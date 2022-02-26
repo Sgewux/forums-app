@@ -36,7 +36,7 @@
         {% if posts_to_show %}
             {% for post in posts_to_show %}
                 <div class="post">
-                    <h3>{{ post.title }}</h3>
+                    <h3> <a href={% url 'forums:show_post' post.pk%}>{{ post.title }}</a></h3>
                     <p>{{ post.content }} <br> <strong>{{ post.points }} point{{ post.points | pluralize}}</strong></p>
                     <a href="">See comments</a>
                 </div>
