@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 from members.models import Member
+from forum_app.abstract_models import Vote
 
 class Forum(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -36,18 +37,13 @@ class Post(models.Model):
     #     ]
 
 
-# class Postvote(models.Model):
-#     POST_UPVOTE = 'U'
-#     POST_DOWNVOTE = 'D'
+class PostVote(Vote):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
 
-#     KIND_OF_VOTE_CHOICES = [
-#         (POST_UPVOTE, 'upvote'),
-#         (POST_DOWNVOTE, 'downvote')
-#     ]
-
-#     user = models.ForeignKey(User, on_delete=models.CASCADE)
-#     post = models.ForeignKey(Post, on_delete=models.CASCADE)
-#     kind_of_vote = models.CharField(
-#         max_length=1, 
-#         choices=KIND_OF_VOTE_CHOICES
-#         )
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'post'], 
+                name='unique_vote_per_post'
+                )
+        ]

@@ -9,7 +9,7 @@
 <body>
     <h1>{{ post.title }}</h1>
     <hr>
-    <div class="post_info">
+    <div class="post-info">
         <strong>Posted in: <a href={% url 'forums:show_forum' post.forum.name %}>{{ post.forum.name }}</a></strong>
         <br>
         <strong>Posted at: {{ post.pub_date |date:'l, j M Y H:i'}}</strong>
@@ -19,8 +19,32 @@
         <strong> {{ post.points }} Point{{post.points | pluralize}}</strong>
     </div>
     
-    <div class="post_content">
+    <div class="post-content">
         <p> {{ post.content }} </p>
+    </div>
+
+    <div class="vote">
+        <form action={% url 'forums:upvote_post' post.pk %} method="post" id="upvote-post">
+            {% csrf_token %}
+        </form>
+        <button form="upvote-post" formmethod="post" type="submit" name="upvote">
+            {% if upvoted %}
+                Remove upvote
+            {% else %}
+                Upvote
+            {% endif %}
+        </button>
+
+        <form action={% url 'forums:downvote_post' post.pk %} method="post" id="downvote-post">
+            {% csrf_token %}
+        </form>
+        <button form="downvote-post" formmethod="post" type="submit">
+            {% if downvoted %}
+                Remove downvote
+            {% else %}
+                Downvote
+            {% endif %}
+        </button>
     </div>
 
     <!--todo: show comments here-->

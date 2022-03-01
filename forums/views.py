@@ -3,11 +3,13 @@ from django.urls import reverse
 from django.db.utils import IntegrityError
 from django.http import HttpResponseRedirect
 from django.views.generic.detail import DetailView
+from django.views.decorators.http import require_POST
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from forum_app.abstract_models import Vote
 
 from members.models import Member
-from .models import Forum, Post
+from .models import Forum, Post, PostVote
 
 def show_forums(request):
     like = request.GET.get('q', None)
@@ -89,8 +91,124 @@ def create_forum(request):
         return render(request, 'forums/create_forum.html', {})
 
 
+def show_post(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    if request.user.is_authenticated:
+        upvoted = False
+        downvoted = False
 
-class PostDetailView(DetailView):
-    model = Post
-    context_object_name = 'post'
-    template_name = 'forums/post.html'
+        if PostVote.objects.filter(  # If user has vote record associated with that post
+            post=post,
+            user=request.user
+        ).exists():
+            if PostVote.objects.get(post=post, user=request.user).is_upvote():
+                upvoted = True
+            else:
+                downvoted = True
+    
+        return render(request, 'forums/post.html',{
+            'post': post,
+            'upvoted': upvoted,
+            'downvoted': downvoted
+        })
+    else:
+        return render(request, 'forums/post.html', {
+            'post': post
+        })
+
+
+@login_required
+@require_POST
+def upvote_post(request, post_id):
+
+    # If the user upvoted the post from /forums/forum_name
+    # it will be redirected there again once the vote logic has been executed
+    # if the request came from /forums/post/post_id, then it will be redirected there
+    redirection_url = request.META.get(
+        'HTTP_REFERER', 
+        reverse('forums:show_post', args=(post_id,))
+        )
+
+    if not PostVote.objects.filter(
+        post__pk = post_id, 
+        user = request.user
+        ).exists():  # If the user has not upvoted nor downvoted this post yet
+
+        post = get_object_or_404(Post, pk=post_id)
+    
+        # We create the vote record.
+        PostVote.objects.create(
+            post=post, user=request.user, 
+            kind_of_vote='U'
+            )
+
+        # Update the post points number.
+        post.points += 1
+        post.save()
+
+        return HttpResponseRedirect(redirection_url)
+    else:
+        post = get_object_or_404(Post, pk=post_id)
+        vote_record = PostVote.objects.get(post=post, user=request.user)
+        # If user has downvoted this post before
+        if vote_record.is_downvote():
+            post.points += 2  # Reverting the downvote effect, and then upvoting the post
+            post.save()
+
+            vote_record.kind_of_vote = 'U'  # The former vote record is updated to be an upvote
+            vote_record.save()
+
+            return HttpResponseRedirect(redirection_url)
+        else:
+            post.points -= 1  # If the post was already upvoted by the user, we wll remove that upvote
+            post.save()
+
+            vote_record.delete()  # Then delete the vote_recond from db
+
+            return HttpResponseRedirect(redirection_url)
+        
+
+@login_required
+@require_POST
+def downvote_post(request, post_id):
+
+    redirection_url = request.META.get(
+        'HTTP_REFERER', 
+        reverse('forums:show_post', args=(post_id,))
+        )
+
+    if not PostVote.objects.filter(
+        post__pk = post_id, 
+        user = request.user
+        ).exists(): 
+
+        post = get_object_or_404(Post, pk=post_id)
+    
+        PostVote.objects.create(
+            post=post, user=request.user, 
+            kind_of_vote='D'
+            )
+
+        post.points -= 1
+        post.save()
+
+        return HttpResponseRedirect(redirection_url)
+    else:
+        post = get_object_or_404(Post, pk=post_id)
+        vote_record = PostVote.objects.get(post=post, user=request.user)
+
+        if vote_record.is_upvote():
+            post.points -= 2 
+            post.save()
+
+            vote_record.kind_of_vote = 'D'
+            vote_record.save()
+
+            return HttpResponseRedirect(redirection_url)
+        else:
+            post.points += 1
+            post.save()
+
+            vote_record.delete()
+
+            return HttpResponseRedirect(redirection_url)
