@@ -1,0 +1,25 @@
+{% load vote_post_form_extras %}
+
+<div class="vote">
+    <form action={% url 'forums:upvote_post' post.pk %} method="post" id="upvote-post-{{post.pk}}">
+        {% csrf_token %}
+    </form>
+    <button form="upvote-post-{{post.pk}}" formmethod="post" type="submit" name="upvote">
+        {% if request.user.is_authenticated %}
+            {{ post|already_upvoted_by:request.user }}
+        {% else %}
+            Upvote
+        {% endif %}
+    </button>
+
+    <form action={% url 'forums:downvote_post' post.pk %} method="post" id="downvote-post-{{post.pk}}">
+        {% csrf_token %}
+    </form>
+    <button form="downvote-post-{{post.pk}}" formmethod="post" type="submit">
+        {% if request.user.is_authenticated %}
+            {{ post|already_downvoted_by:request.user }}
+        {% else %}
+            Downvote 
+        {% endif %}
+    </button>
+</div>

@@ -23,29 +23,7 @@
         <p> {{ post.content }} </p>
     </div>
 
-    <div class="vote">
-        <form action={% url 'forums:upvote_post' post.pk %} method="post" id="upvote-post">
-            {% csrf_token %}
-        </form>
-        <button form="upvote-post" formmethod="post" type="submit" name="upvote">
-            {% if upvoted %}
-                Remove upvote
-            {% else %}
-                Upvote
-            {% endif %}
-        </button>
-
-        <form action={% url 'forums:downvote_post' post.pk %} method="post" id="downvote-post">
-            {% csrf_token %}
-        </form>
-        <button form="downvote-post" formmethod="post" type="submit">
-            {% if downvoted %}
-                Remove downvote
-            {% else %}
-                Downvote
-            {% endif %}
-        </button>
-    </div>
+    {% include 'forums/includes/vote_post_form.html' %}
 
     <!--todo: show comments here-->
 

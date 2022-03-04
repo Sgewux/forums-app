@@ -19,11 +19,24 @@
         <br>
         <strong>{{ forum.members.count }} member{{ forum.members.count | pluralize }}</strong>
         <br>
+
         {% if member_belongs %}
-            <a href="{% url 'forums:leave_forum' forum.name %}">Leave comunity</a>
+            <form action={% url 'forums:leave_forum' forum.name  %} method="post" id="join-or-leave-forum">
+                {% csrf_token %}
+            </form>
         {% else %}
-            <a href="{% url 'forums:join_forum' forum.name %}">Join comunity</a>
+            <form action={% url 'forums:join_forum' forum.name  %} method="post" id="join-or-leave-forum">
+                {% csrf_token %}
+            </form>
         {% endif %}
+
+        <button form="join-or-leave-forum" formmethod="post" type="submit">
+            {% if member_belongs %}
+                Leave comunity
+            {% else %}
+                Join comunity
+            {% endif %}
+        </button>
     </div>
     <hr>
 
@@ -38,6 +51,9 @@
                 <div class="post">
                     <h3> <a href={% url 'forums:show_post' post.pk%}>{{ post.title }}</a></h3>
                     <p>{{ post.content }} <br> <strong>{{ post.points }} point{{ post.points | pluralize}}</strong></p>
+                    
+                    {% include 'forums/includes/vote_post_form.html' %}
+
                     <a href="">See comments</a>
                 </div>
             {% endfor %}

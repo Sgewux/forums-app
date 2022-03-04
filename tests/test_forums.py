@@ -25,7 +25,7 @@ class TestJoinAndLeaveForumView(TestCase):
 
         self.client.login(username='julian', password='1234')
 
-        response = self.client.get(
+        response = self.client.post(
             reverse('forums:join_forum', args=(forum.name,)), 
             follow=True
             )
@@ -52,7 +52,7 @@ class TestJoinAndLeaveForumView(TestCase):
         forum.members.add(user.member)
 
         self.client.login(username='juliaasdn', password='1234')
-        response = self.client.get(
+        response = self.client.post(
             reverse('forums:leave_forum', args=(forum.name,)),
             follow=True
         )
@@ -63,7 +63,7 @@ class TestJoinAndLeaveForumView(TestCase):
 
 
 class TestForumCreation(TestCase):
-    def test_forum_creation(self):
+    def test_forum_model_creation(self):
         '''Test if the forum creation process works properly'''
         user = User(username='julianXXX')
         user.set_password('1234')
@@ -83,7 +83,7 @@ class TestForumCreation(TestCase):
             True
             )
 
-    def test_forum_creation_with_same_name(self):
+    def test_forum_model_creation_with_same_name(self):
         '''If the user tries to create a forum with an already existent forums name it will display a message'''
         user = User(username='pedro')
         user.set_password('1234')

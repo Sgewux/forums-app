@@ -13,7 +13,9 @@
         <a href="{% url 'members:login' %}">LogIn</a>
     </header>
     <h1>Wecome to ForumsApp</h1>
-    <p>We got a lot of amazing communities for you to join</p>
+    <p>We got a lot of amazing communities for you to join.</p>
+    <br>
+    <a href={% url 'forums:create_forum' %}>Create you own</a>
     
     <form action={% url 'forums:forums_home' %} method="get">
         <input type="text" name="q" id="q" placeholder="Search a forum">

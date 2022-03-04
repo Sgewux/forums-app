@@ -6,9 +6,7 @@ from django.views.generic.detail import DetailView
 from django.views.decorators.http import require_POST
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from forum_app.abstract_models import Vote
 
-from members.models import Member
 from .models import Forum, Post, PostVote
 
 def show_forums(request):
@@ -47,6 +45,7 @@ def show_forum(request, forum_name):
 
 
 @login_required
+@require_POST
 def join_forum(request, forum_name):
     forum = get_object_or_404(Forum, name=forum_name)
 
@@ -57,6 +56,7 @@ def join_forum(request, forum_name):
 
 
 @login_required
+@require_POST
 def leave_forum(request, forum_name):
     forum = get_object_or_404(Forum, name=forum_name)
 
@@ -91,30 +91,10 @@ def create_forum(request):
         return render(request, 'forums/create_forum.html', {})
 
 
-def show_post(request, post_id):
-    post = get_object_or_404(Post, pk=post_id)
-    if request.user.is_authenticated:
-        upvoted = False
-        downvoted = False
-
-        if PostVote.objects.filter(  # If user has vote record associated with that post
-            post=post,
-            user=request.user
-        ).exists():
-            if PostVote.objects.get(post=post, user=request.user).is_upvote():
-                upvoted = True
-            else:
-                downvoted = True
-    
-        return render(request, 'forums/post.html',{
-            'post': post,
-            'upvoted': upvoted,
-            'downvoted': downvoted
-        })
-    else:
-        return render(request, 'forums/post.html', {
-            'post': post
-        })
+class PostDetailView(DetailView):
+    model = Post
+    context_object_name = 'post'
+    template_name = 'forums/post.html'
 
 
 @login_required
