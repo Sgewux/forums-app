@@ -7,7 +7,7 @@
     <title>{{ forum.name }}</title>
 </head>
 <body>
-    {% include 'forums/includes/messages.html' %}
+    {% include 'includes/messages.html' %}
 
     <h1>{{ forum.name }}</h1>
     <hr>
@@ -57,7 +57,7 @@
                     <h3> <a href={% url 'forums:show_post' post.pk%}>{{ post.title }}</a></h3>
                     <p>{{ post.content }} <br> <strong>{{ post.points }} point{{ post.points | pluralize}}</strong></p>
                     
-                    {% include 'forums/includes/vote_post_form.html' %}
+                    {% include 'includes/vote_post_form.html' %}
 
                     <a href="">See comments</a>
                 </div>

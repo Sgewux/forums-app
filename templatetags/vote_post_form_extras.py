@@ -1,6 +1,6 @@
 from django import template
 
-from ..models import PostVote
+from forums.models import PostVote
 
 register = template.Library()
 
