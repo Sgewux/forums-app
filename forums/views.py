@@ -1,5 +1,6 @@
 from django.db.models import Q
 from django.urls import reverse
+from django.contrib import messages
 from django.db.utils import IntegrityError
 from django.http import HttpResponseRedirect
 from django.views.generic.detail import DetailView
@@ -83,7 +84,7 @@ def create_forum(request):
                 'already_used_name': True
             })
         else:
-            forum.members.add(request.user.member)
+            forum.members.add(request.user.member)  # The user who created the forum is added as a member by default
             return HttpResponseRedirect(reverse('forums:show_forum', 
             args=(request.POST['forum_name'],))
             )
@@ -192,3 +193,46 @@ def downvote_post(request, post_id):
             vote_record.delete()
 
             return HttpResponseRedirect(redirection_url)
+
+
+@login_required
+def publish_post(request, forum_name):
+    forum = get_object_or_404(Forum, name=forum_name)
+    if request.method == 'POST' and forum.members.contains(request.user.member):
+        if request.POST['post_title'] and request.POST['post_content']:
+            post = Post(
+                forum=forum, 
+                poster=request.user.member, 
+                title=request.POST['post_title'], 
+                content=request.POST['post_content']
+                )
+            post.save()
+
+            return HttpResponseRedirect(
+                reverse('forums:show_post', args=(post.pk,))
+                )
+
+        else:
+            messages.add_message(
+                request, 
+                messages.INFO,
+                'Please fill all the fields'
+                )
+            return render(request, 'forums/publish_post.html', {
+                'forum_name': forum.name
+            })
+                
+    else:
+        if forum.members.contains(request.user.member):  # The user has already joined the forum
+            return render(request, 'forums/publish_post.html', {
+            'forum_name': forum.name
+        })
+        else:  # The user have not join to the forum yet
+            messages.add_message(
+                request, 
+                messages.INFO, 
+                'You have to be part of this community to publish a post.'
+                )
+            return HttpResponseRedirect(
+                reverse('forums:show_forum', args=(forum.name,))
+                )

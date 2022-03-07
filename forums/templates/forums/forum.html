@@ -7,6 +7,8 @@
     <title>{{ forum.name }}</title>
 </head>
 <body>
+    {% include 'forums/includes/messages.html' %}
+
     <h1>{{ forum.name }}</h1>
     <hr>
 
@@ -19,25 +21,28 @@
         <br>
         <strong>{{ forum.members.count }} member{{ forum.members.count | pluralize }}</strong>
         <br>
-
-        {% if member_belongs %}
-            <form action={% url 'forums:leave_forum' forum.name  %} method="post" id="join-or-leave-forum">
-                {% csrf_token %}
-            </form>
-        {% else %}
-            <form action={% url 'forums:join_forum' forum.name  %} method="post" id="join-or-leave-forum">
-                {% csrf_token %}
-            </form>
-        {% endif %}
-
-        <button form="join-or-leave-forum" formmethod="post" type="submit">
-            {% if member_belongs %}
-                Leave comunity
-            {% else %}
-                Join comunity
-            {% endif %}
-        </button>
     </div>
+
+    {% if member_belongs %}
+    <form action={% url 'forums:leave_forum' forum.name  %} method="post" id="join-or-leave-forum">
+        {% csrf_token %}
+    </form>
+    {% else %}
+        <form action={% url 'forums:join_forum' forum.name  %} method="post" id="join-or-leave-forum">
+            {% csrf_token %}
+        </form>
+    {% endif %}
+
+    <button form="join-or-leave-forum" formmethod="post" type="submit">
+        {% if member_belongs %}
+            Leave comunity
+        {% else %}
+            Join comunity
+        {% endif %}
+    </button>
+
+    <a href={% url 'forums:publish_post' forum.name%}>Post something</a>
+
     <hr>
 
     <form action="" method="get">

@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 
 from members.models import Member
-from forums.models import Forum
+from forums.models import Forum, Post
 
 class TestJoinAndLeaveForumView(TestCase):
 
@@ -63,6 +63,7 @@ class TestJoinAndLeaveForumView(TestCase):
 
 
 class TestForumCreation(TestCase):
+
     def test_forum_model_creation(self):
         '''Test if the forum creation process works properly'''
         user = User(username='julianXXX')
@@ -99,3 +100,86 @@ class TestForumCreation(TestCase):
         })
 
         self.assertContains(response, 'We already have a forum with that name.')
+
+
+class UpvoteAndDownvote(TestCase):
+    def test_upvote_works_fine(self):
+        pass
+
+    def test_downvote_works_fine(self):
+        pass
+
+    def test_upvote_two_times_remove_upvote(self):
+        pass
+
+    def test_downvote_two_times_remove_downvote(self):
+        pass
+
+    def test_remove_downvote_once_downvoted(self):
+        pass
+
+    def test_remove_upvote_once_upvoted(self):
+        pass
+    
+
+class PublishEditAndDeletePost(TestCase):
+
+    def test_post_publishment_works(self):
+        '''Test if the publishment process works well'''
+        user = User(username='hellothere')
+        user.set_password('pass')
+        user.save()
+        Member.objects.create(user=user, bio='sdd')
+        forum = Forum(owner=user, name='forum1', description='sdasd')
+        forum.save()
+        forum.members.add(user.member)  # Adding user to forum
+
+        self.client.login(username=user.username, password='pass')
+        response = self.client.post(reverse('forums:publish_post', args=('forum1',)), {
+            'post_title': 'whatever',
+            'post_content': 'idc'
+        }, follow=True)
+        self.client.logout()
+
+        self.assertEqual(response.redirect_chain[0][1], 302)
+        self.assertIs(user.member.post_set.filter(title = 'whatever', content='idc').exists(), True)
+        self.assertContains(response, 'whatever')
+
+    def test_info_message_when_user_aint_part_of_forum(self):
+        '''If the user is not part of the forum, it would not be able to post, wi will show him a message telling him that'''
+        user = User(username='useruser')
+        user.set_password('pass')
+        user.save()
+        Member.objects.create(user=user, bio='sdd')
+        forum = Forum(owner=user, name='forum2', description='sdasd')
+        forum.save()
+
+        self.client.login(username=user.username, password='pass')
+        response = self.client.post(reverse('forums:publish_post', args=(forum.name,)), {
+            'post_title': 'whatever',
+            'post_content': 'idc'
+        }, follow=True)
+        self.client.logout()
+
+        self.assertEqual(response.redirect_chain[0][1], 302)
+        self.assertIs(user.member.post_set.filter(title = 'whatever', content='idc').exists(), False) # Post was not created
+        self.assertContains(response, 'You have to be part of this community to publish a post.') # message
+    
+    def test_info_message_when_user_sent_blank_fields(self):
+        '''IF the user didnt provide a title nor a content fo the post we will show him a message'''
+        user = User(username='asdsa8')
+        user.set_password('pass')
+        user.save()
+        Member.objects.create(user=user, bio='sdd')
+        forum = Forum(owner=user, name='forum3', description='sdasd')
+        forum.save()
+        forum.members.add(user.member)  # Adding user to forum
+
+        self.client.login(username=user.username, password='pass')
+        response = self.client.post(reverse('forums:publish_post', args=(forum.name,)), {
+            'post_title': '',
+            'post_content': ''
+        })
+        self.client.logout()
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Please fill all the fields')

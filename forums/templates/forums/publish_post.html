@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post in {{ forum_name }}</title>
+</head>
+<body>
+    <h1>Post in {{forum_name}}</h1>
+    <form action={% url 'forums:publish_post' forum_name %} method="post">
+        {% csrf_token %}
+        <fieldset>
+            <label for="post_title">Title</label>
+            <input type="text" name="post_title" id="post_title">
+            <br>
+            <label for="post_content">Content</label>
+            <input type="text" name="post_content" id="post_content">   
+            
+            {% include 'forums/includes/messages.html' %}
+        </fieldset>
+        <input type="submit">
+    </form>
+</body>
+</html>
