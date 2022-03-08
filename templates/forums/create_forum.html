@@ -12,13 +12,11 @@
         <fieldset>
             <legend><h1>Forum Creation</h1></legend>
 
+            {% include 'includes/messages.html' %}
+
             <label for="forum_name">Forum name:</label>
             <input type="text" name="forum_name">
             <br>
-            {% if already_used_name %}
-                <strong>We already have a forum with that name.</strong>
-            {% endif %}
-
             <label for="description">Description:</label>
             <input type="text" name="description">
 

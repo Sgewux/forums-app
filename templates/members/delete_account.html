@@ -16,9 +16,9 @@
         {% csrf_token %}
         <label for="password">Password</label>
         <input type="password" name="password">
-        {% if wrong_password %}
-        <strong>You wrote the wrong pasword! seems like you don't really want to leave...</strong>
-        {% endif %}
+
+        {% include 'includes/messages.html' %}
+
         <input type="submit" value="Delete Account">
     </form>
 

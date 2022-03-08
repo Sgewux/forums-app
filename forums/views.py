@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.db.utils import IntegrityError
 from django.http import HttpResponseRedirect
 from django.views.generic.detail import DetailView
+from django.core.exceptions import PermissionDenied
 from django.views.decorators.http import require_POST
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -80,9 +81,12 @@ def create_forum(request):
         except IntegrityError as e:
             # todo: once i switch to postgres i got to add here the logic for
             # a name or desc which uses a greather than permited lenght
-            return render(request, 'forums/create_forum.html', {
-                'already_used_name': True
-            })
+            messages.add_message(
+                request,
+                messages.INFO,
+                'We already have a forum with that name.'
+            )
+            return render(request, 'forums/create_forum.html', {})
         else:
             forum.members.add(request.user.member)  # The user who created the forum is added as a member by default
             return HttpResponseRedirect(reverse('forums:show_forum', 
@@ -96,6 +100,31 @@ class PostDetailView(DetailView):
     model = Post
     context_object_name = 'post'
     template_name = 'forums/post.html'
+    pk_url_kwarg = 'post_id'  # kwarg to be used in url
+
+
+@login_required
+@require_POST
+def delete_post(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    
+    if post.poster == request.user.member:
+        title = post.title
+        forum_name = post.forum.name
+
+        messages.add_message(
+            request,
+            messages.INFO,
+            f'Your post: {title} Was succesfully deleted.'
+        )
+        post.delete()
+
+        return HttpResponseRedirect(
+            reverse('forums:show_forum', args=(forum_name,))
+            )
+    else:
+        raise PermissionDenied
+
 
 
 @login_required

@@ -179,4 +179,4 @@ class DeleteAccountTests(TestCase):
         })
         
         self.assertContains(response, 
-        'You wrote the wrong pasword! seems like you don\'t really want to leave...')
+        'You wrote the wrong password! seems like you dont really want to leave...')

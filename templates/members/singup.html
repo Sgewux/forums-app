@@ -13,14 +13,14 @@
             <legend><h1>Create Account</h1></legend>
             <label for="username">Username</label>
             <input type="text" name="username">
-            {% if user_already_exists %}<strong>That user already exists!</strong>{% endif %}
             <br>
             <label for="password"> You Password</label>
             <input type="password" name="password" id="password">
             <br>
             <label for="password_again">Your Password again</label>
             <input type="password" name="password_again" id="password">
-            {% if passwords_are_different %}<strong>Passwords were not equal!</strong>{% endif %}
+
+            {% include 'includes/messages.html' %}
             
        </fieldset>
 

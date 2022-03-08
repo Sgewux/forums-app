@@ -13,9 +13,7 @@
        <fieldset>
             <legend><h1>Login</h1></legend>
 
-            {% if login_failed %}
-                <h2>Unsuccesfull login, try again!</h2>
-            {% endif %}
+            {% include 'includes/messages.html' %}
 
             <label for="username">Username</label>
             <input type="text" name="username">

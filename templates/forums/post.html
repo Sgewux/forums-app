@@ -19,6 +19,15 @@
         <strong> {{ post.points }} Point{{post.points | pluralize}}</strong>
     </div>
     
+    {% if request.user.is_authenticated %}
+        {% if post.poster == request.user.member %}
+            <form action={% url 'forums:delete_post' post.pk%} method="post">
+                {% csrf_token %}
+                <input type="submit" value="Delete Post">
+            </form>
+        {% endif %}
+    {% endif %}
+    
     <div class="post-content">
         <p> {{ post.content }} </p>
     </div>

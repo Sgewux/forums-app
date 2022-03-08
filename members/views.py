@@ -1,8 +1,8 @@
 from django.urls import reverse
-from django.shortcuts import render, get_object_or_404
 from django.contrib import messages
 from django.db.utils import IntegrityError
 from django.contrib.auth.models import User
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
@@ -20,9 +20,12 @@ def login_user(request):
             login(request, user)
             return HttpResponseRedirect(reverse('members:feed'))
         else:
-            return render(request, 'members/login.html', {
-                'login_failed': True
-            })
+            messages.add_message(
+                request,
+                messages.ERROR,
+                'Unsuccesfull login, try again!'
+            )
+            return render(request, 'members/login.html', {})
     else:
         return render(request, 'members/login.html', {})
 
@@ -40,17 +43,23 @@ def singup_user(request):
                 try:
                     user.save()
                 except IntegrityError:
-                    return render(request, 'members/singup.html', {
-                        'user_already_exists': True
-                    })
+                    messages.add_message(
+                        request,
+                        messages.INFO,
+                        'That user already exists!'
+                    )
+                    return render(request, 'members/singup.html', {})
                 else:
                     Member.objects.create(user=user, bio='Hello everyone, i\'m using ForumsApp!')
                     login(request, user)
                     return HttpResponseRedirect(reverse('members:feed'))
             else:
-                return render(request, 'members/singup.html', {
-                    'passwords_are_different': True
-                })
+                messages.add_message(
+                    request,
+                    messages.INFO,
+                    'Passwords were not equal!'
+                )
+                return render(request, 'members/singup.html', {})
         else:
             return render(request, 'members/singup.html', {})
     else:
@@ -96,9 +105,12 @@ def delete_account(request):
             return HttpResponseRedirect(reverse('forums:forums_home'))
         
         else:
-            return render(request, 'members/delete_account.html', {
-                'wrong_password': True
-            })
+            messages.add_message(
+                request,
+                messages.INFO,
+                'You wrote the wrong password! seems like you dont really want to leave...'
+            )
+            return render(request, 'members/delete_account.html', {})
 
     else:
         return render(request, 'members/delete_account.html',{})
