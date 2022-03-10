@@ -104,26 +104,57 @@ class PostDetailView(DetailView):
 
 
 @login_required
+def edit_post(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    if request.method == 'POST' and post.was_posted_by(request.user.member):
+        new_content = request.POST.get('new_content')
+        if new_content:
+            post.content = new_content
+            post.save(update_fields=['content'])
+
+            return HttpResponseRedirect(
+                reverse('forums:show_post', args=(post.pk,))
+                )
+
+        else:
+            messages.add_message(
+                request,
+                messages.INFO,
+                'Please provide a new content for the post.'
+            )
+
+            return render(request, 'forums/edit_post.html',{
+                'post': post
+            })
+    else:
+        if not post.was_posted_by(request.user.member):
+            raise PermissionDenied  # If someone is trying to edit post that aint his
+        return render(request, 'forums/edit_post.html', {
+            'post': post
+        })
+
+
+@login_required
 @require_POST
 def delete_post(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
     
-    if post.poster == request.user.member:
+    if post.was_posted_by(request.user.member):
         title = post.title
         forum_name = post.forum.name
+        post.delete()
 
         messages.add_message(
             request,
             messages.INFO,
             f'Your post: {title} Was succesfully deleted.'
         )
-        post.delete()
 
         return HttpResponseRedirect(
             reverse('forums:show_forum', args=(forum_name,))
             )
     else:
-        raise PermissionDenied
+        raise PermissionDenied  # Same as 403 forbidden
 
 
 
@@ -154,7 +185,7 @@ def upvote_post(request, post_id):
 
         # Update the post points number.
         post.points += 1
-        post.save()
+        post.save(update_fields=['points'])
 
         return HttpResponseRedirect(redirection_url)
     else:
@@ -163,15 +194,15 @@ def upvote_post(request, post_id):
         # If user has downvoted this post before
         if vote_record.is_downvote():
             post.points += 2  # Reverting the downvote effect, and then upvoting the post
-            post.save()
+            post.save(update_fields=['points'])
 
             vote_record.kind_of_vote = 'U'  # The former vote record is updated to be an upvote
-            vote_record.save()
+            vote_record.save(update_fields=['kind_of_vote'])
 
             return HttpResponseRedirect(redirection_url)
         else:
             post.points -= 1  # If the post was already upvoted by the user, we wll remove that upvote
-            post.save()
+            post.save(update_fields=['points'])
 
             vote_record.delete()  # Then delete the vote_recond from db
 
@@ -200,7 +231,7 @@ def downvote_post(request, post_id):
             )
 
         post.points -= 1
-        post.save()
+        post.save(update_fields=['points'])
 
         return HttpResponseRedirect(redirection_url)
     else:
@@ -209,15 +240,15 @@ def downvote_post(request, post_id):
 
         if vote_record.is_upvote():
             post.points -= 2 
-            post.save()
+            post.save(update_fields=['points'])
 
             vote_record.kind_of_vote = 'D'
-            vote_record.save()
+            vote_record.save(update_fields=['kind_of_vote'])
 
             return HttpResponseRedirect(redirection_url)
         else:
             post.points += 1
-            post.save()
+            post.save(update_fields=['points'])
 
             vote_record.delete()
 
@@ -228,12 +259,14 @@ def downvote_post(request, post_id):
 def publish_post(request, forum_name):
     forum = get_object_or_404(Forum, name=forum_name)
     if request.method == 'POST' and forum.members.contains(request.user.member):
-        if request.POST['post_title'] and request.POST['post_content']:
+        title = request.POST.get('post_title')
+        content = request.POST.get('post_content')
+        if title and content:
             post = Post(
                 forum=forum, 
                 poster=request.user.member, 
-                title=request.POST['post_title'], 
-                content=request.POST['post_content']
+                title=title, 
+                content=content
                 )
             post.save()
 

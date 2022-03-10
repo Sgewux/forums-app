@@ -145,7 +145,7 @@ class PublishEditAndDeletePost(TestCase):
         self.assertIs(user.member.post_set.filter(title = 'whatever', content='idc').exists(), True)
         self.assertContains(response, 'whatever')
 
-    def test_info_message_when_user_aint_part_of_forum(self):
+    def test_info_message_when_user_aint_part_of_forum_when_publishin(self):
         '''If the user is not part of the forum, it would not be able to post, wi will show him a message telling him that'''
         user = User(username='useruser')
         user.set_password('pass')
@@ -165,7 +165,7 @@ class PublishEditAndDeletePost(TestCase):
         self.assertIs(user.member.post_set.filter(title = 'whatever', content='idc').exists(), False) # Post was not created
         self.assertContains(response, 'You have to be part of this community to publish a post.') # message
     
-    def test_info_message_when_user_sent_blank_fields(self):
+    def test_info_message_when_user_sent_blank_fields_when_publishing(self):
         '''IF the user didnt provide a title nor a content fo the post we will show him a message'''
         user = User(username='asdsa8')
         user.set_password('pass')
@@ -183,3 +183,85 @@ class PublishEditAndDeletePost(TestCase):
         self.client.logout()
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Please fill all the fields')
+    
+    def test_delete_post_works(self):
+        user = User(username='asdsa8')
+        user.set_password('pass')
+        user.save()
+        Member.objects.create(user=user, bio='sdd')
+        forum = Forum(owner=user, name='forum3', description='sdasd')
+        forum.save()
+        forum.members.add(user.member)
+        post = Post(
+            forum=forum,
+            content='SDAS',
+            poster=user.member,
+            title='sdsds'
+            )
+        post.save()
+
+        self.client.login(username=user.username, password='pass')
+        response = self.client.post(reverse('forums:delete_post', args=(post.pk,)),
+            follow=True
+        )
+        self.client.logout()
+
+        self.assertEqual(response.redirect_chain[0][1], 302)
+        self.assertContains(response, f'Your post: {post.title} Was succesfully deleted.')
+        self.assertIs(forum.post_set.all().contains(post), False)
+
+    def test_return_forbidden_if_trying_delete_post_isnt_yours(self):
+        '''If the user tryes to delete a post that is not his we will return HTTP 403'''
+        user = User(username='asdsa8')
+        user.set_password('pass')
+        user.save()
+        Member.objects.create(user=user, bio='sdd')
+        forum = Forum(owner=user, name='forum3', description='sdasd')
+        forum.save()
+        forum.members.add(user.member)
+        post = Post(
+            forum=forum,
+            content='SDAS',
+            poster=user.member,
+            title='sdsds'
+            )
+        post.save()
+        user2 = User(username='asdasdeee')
+        user2.set_password('pass')
+        user2.save()
+        Member.objects.create(user=user2, bio='sdd')
+
+        self.client.login(username=user2.username, password='pass')
+        response = self.client.post(reverse('forums:delete_post', args=(post.pk,)))
+        self.client.logout()
+
+        self.assertEqual(response.status_code, 403)
+        self.assertIs(forum.post_set.all().contains(post), True)  # hence post was not deleted
+
+    def test_edit_post_works(self):
+        user = User(username='asdsa8')
+        user.set_password('pass')
+        user.save()
+        Member.objects.create(user=user, bio='sdd')
+        forum = Forum(owner=user, name='forum3', description='sdasd')
+        forum.save()
+        forum.members.add(user.member)
+        post = Post(
+            forum=forum,
+            content='SDAS',
+            poster=user.member,
+            title='sdsds'
+            )
+        post.save()
+
+        self.client.login(username=user.username, password='pass')
+        response = self.client.post(reverse('forums:edit_post', args=(post.pk,)), {
+            'new_content': 'new content'
+        }, follow=True)
+        self.client.logout()
+
+        self.assertEqual(response.redirect_chain[0][1], 302)
+        self.assertEqual(Post.objects.get(pk=post.pk).content, 'new content')
+
+
+        

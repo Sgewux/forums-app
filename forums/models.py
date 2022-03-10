@@ -26,10 +26,15 @@ class Post(models.Model):
     title = models.CharField(max_length=30)
     content = models.CharField(max_length=255)
     points = models.IntegerField(default=0)
+    #edited = models.BooleanField(default=False)
     pub_date = models.DateTimeField('pub_date', auto_now_add=True)
 
     def __str__(self):
         return f'tittle: {self.title}, from: {self.forum}, by: {self.poster.user.username}'
+
+    def was_posted_by(self, member):
+        '''Utility function to know if a given member was the one who post this post'''
+        return self.poster == member
 
     # class Meta:
     #     permissions = [

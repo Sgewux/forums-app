@@ -85,7 +85,7 @@ def edit_profile(request):
     if request.method == 'POST':
         member = request.user.member
         member.bio = request.POST['new_bio']
-        member.save()
+        member.save(update_fields=['bio'])
 
         return HttpResponseRedirect(reverse('members:profile'))
     else:
