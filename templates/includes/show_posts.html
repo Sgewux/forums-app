@@ -1,0 +1,29 @@
+<div class="posts">
+    {% if posts_to_show %}
+        {% for post in posts_to_show %}
+            <hr>
+
+            <div class="post-{{post.pk}}">
+                <h2><a href={% url 'forums:show_post' post.pk%}>{{ post.title }}</a></h2>
+                {% if not forum %} <!--If we are not displaying the posts from  forum.html-->
+                    <strong>Posted in: <a href= {% url 'forums:show_forum' post.forum.name%}>{{ post.forum.name }}</a> </strong>
+                    <br>
+                {% endif %}
+                <strong>Posted by: <a href= {% url 'members:show_member' post.poster.user.username%}>{{ post.poster.user.username }}</a></strong>
+                    {% if post.edited %}
+                        <strong>(edited)</strong>
+                    {% endif %}
+                <br>
+                <strong>{{ post.points }} Point{{post.points | pluralize}}</strong>
+                <p>{{ post.content }}</p>
+                {% include 'includes/vote_post_form.html' %}
+
+                <a href="">See comments</a>
+            </div>
+
+        {% endfor %}
+
+    {% else %}
+    <h2>No posts :(</h2>
+    {% endif %}  
+</div>

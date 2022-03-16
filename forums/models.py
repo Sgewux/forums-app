@@ -26,7 +26,7 @@ class Post(models.Model):
     title = models.CharField(max_length=30)
     content = models.CharField(max_length=255)
     points = models.IntegerField(default=0)
-    #edited = models.BooleanField(default=False)
+    edited = models.BooleanField(default=False)
     pub_date = models.DateTimeField('pub_date', auto_now_add=True)
 
     def __str__(self):

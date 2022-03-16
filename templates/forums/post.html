@@ -15,12 +15,16 @@
         <strong>Posted at: {{ post.pub_date |date:'l, j M Y H:i'}}</strong>
         <br>
         <strong>Posted by: <a href={% url 'members:show_member' post.poster.user.username%}> {{ post.poster.user.username }} </a></strong>
+            {% if post.edited %}
+                <strong>(edited)</strong>
+            {% endif %}
         <br>
         <strong> {{ post.points }} Point{{post.points | pluralize}}</strong>
     </div>
     
     {% if request.user.is_authenticated %}
         {% if post.poster == request.user.member %}
+            <a href={% url 'forums:edit_post' post.pk %}>Edit Post</a>
             <form action={% url 'forums:delete_post' post.pk%} method="post">
                 {% csrf_token %}
                 <input type="submit" value="Delete Post">

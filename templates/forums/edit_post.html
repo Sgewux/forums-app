@@ -7,11 +7,11 @@
     <title>Editing: {{ post.title }}</title>
 </head>
 <body>
-    <h1>Editing {{ post.title }}</h1>
+    <h1>Editing "{{ post.title }}"</h1>
     {% include 'includes/messages.html' %}
     <form action={% url 'forums:edit_post' post.pk%} method="post">
         {% csrf_token %}
-        <input type="text" name="new_content" value={{ post.content }}>
+        <textarea name="new_content" cols="30" rows="5">{{post.content}}</textarea>
         <input type="submit" value="publish">
     </form>
 </body>

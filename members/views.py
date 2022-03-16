@@ -124,7 +124,7 @@ def user_feed(request):
             (SELECT forum_id FROM forums_forum_members WHERE member_id = {request.user.pk})\
             GROUP BY forum_id);')
     return render(request, 'members/feed.html', {
-        'latest_posts': latest_posts
+        'posts_to_show': latest_posts
     })
 
 

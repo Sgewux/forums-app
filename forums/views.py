@@ -109,8 +109,9 @@ def edit_post(request, post_id):
     if request.method == 'POST' and post.was_posted_by(request.user.member):
         new_content = request.POST.get('new_content')
         if new_content:
+            post.edited = True
             post.content = new_content
-            post.save(update_fields=['content'])
+            post.save(update_fields=['content', 'edited'])
 
             return HttpResponseRedirect(
                 reverse('forums:show_post', args=(post.pk,))

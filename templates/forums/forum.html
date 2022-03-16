@@ -50,22 +50,6 @@
         <input type="submit">
     </form>
     
-    <div class="posts">
-        {% if posts_to_show %}
-            {% for post in posts_to_show %}
-                <div class="post">
-                    <h3> <a href={% url 'forums:show_post' post.pk%}>{{ post.title }}</a></h3>
-                    <p>{{ post.content }} <br> <strong>{{ post.points }} point{{ post.points | pluralize}}</strong></p>
-                    
-                    {% include 'includes/vote_post_form.html' %}
-
-                    <a href="">See comments</a>
-                </div>
-            {% endfor %}
-        {% else %}
-                <h2>No posts :(</h2>
-        {% endif %}
-
-    </div>
+    {% include 'includes/show_posts.html' %}
 </body>
 </html>

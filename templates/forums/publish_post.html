@@ -12,10 +12,12 @@
         {% csrf_token %}
         <fieldset>
             <label for="post_title">Title</label>
+            <br>
             <input type="text" name="post_title" id="post_title">
             <br>
             <label for="post_content">Content</label>
-            <input type="text" name="post_content" id="post_content">   
+            <br>
+            <textarea name="post_content" id="post_content" cols="30" rows="5">Hello dear {{forum_name}} forum...</textarea>  
             
             {% include 'includes/messages.html' %}
         </fieldset>

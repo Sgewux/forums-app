@@ -260,8 +260,67 @@ class PublishEditAndDeletePost(TestCase):
         }, follow=True)
         self.client.logout()
 
+        edited_post = Post.objects.get(pk=post.pk)
         self.assertEqual(response.redirect_chain[0][1], 302)
-        self.assertEqual(Post.objects.get(pk=post.pk).content, 'new content')
+        self.assertEqual(edited_post.content, 'new content')
+        self.assertIs(edited_post.edited, True)
 
 
+    def test_edit_post_without_content_displays_message(self):
+        '''If the user does not provide a new content for the post we should show a message and dont update that post'''
+        user = User(username='asdsa8')
+        user.set_password('pass')
+        user.save()
+        Member.objects.create(user=user, bio='sdd')
+        forum = Forum(owner=user, name='forum3', description='sdasd')
+        forum.save()
+        forum.members.add(user.member)
+        post = Post(
+            forum=forum,
+            content='first content',
+            poster=user.member,
+            title='sdsds'
+            )
+        post.save()
+
+        self.client.login(username=user.username, password='pass')
+        response = self.client.post(reverse('forums:edit_post', args=(post.pk,)), {
+            'new_content': ''
+        })
+        self.client.logout()
+
+        edited_post = Post.objects.get(pk=post.pk)
+        self.assertContains(response, 'Please provide a new content for the post.')
+        self.assertEqual(edited_post.content, 'first content')  # content remains the same
+        self.assertIs(edited_post.edited, False)
         
+    def test_return_forbidden_if_trying_to_edit_post_isnt_yours(self):
+        '''If the user tryies to delete a post that isnt his, we will return 403 forbidden as HTTP statuscode'''
+        user = User(username='asdsa8')
+        user.set_password('pass')
+        user.save()
+        Member.objects.create(user=user, bio='sdd')
+        forum = Forum(owner=user, name='forum3', description='sdasd')
+        forum.save()
+        forum.members.add(user.member)
+        post = Post(
+            forum=forum,
+            content='first content',
+            poster=user.member,
+            title='sdsds'
+            )
+        post.save()
+        user2 = User(username='asdasdeee')
+        user2.set_password('pass')
+        user2.save()
+        Member.objects.create(user=user2, bio='sdd')
+
+        self.client.login(username=user2.username, password='pass')
+        response = self.client.post(reverse('forums:edit_post', args=(post.pk,)), {
+            'new_content': 'zgzg'
+        })
+        self.client.logout()
+        edited_post = Post.objects.get(pk=post.pk)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(edited_post.content, 'first content')  # content remains the same
+        self.assertIs(edited_post.edited, False)
