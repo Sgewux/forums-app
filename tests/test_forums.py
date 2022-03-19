@@ -1,9 +1,10 @@
+from urllib import response
 from django.urls import reverse
 from django.test import TestCase
 from django.contrib.auth.models import User
 
 from members.models import Member
-from forums.models import Forum, Post
+from forums.models import Forum, Post, PostVote
 
 class TestJoinAndLeaveForumView(TestCase):
 
@@ -103,23 +104,126 @@ class TestForumCreation(TestCase):
 
 
 class UpvoteAndDownvote(TestCase):
+
     def test_upvote_works_fine(self):
-        pass
+        user = User(username='hellothere')
+        user.set_password('pass')
+        user.save()
+        Member.objects.create(user=user, bio='sdd')
+        forum = Forum(owner=user, name='forum1', description='sdasd')
+        forum.save()
+        forum.members.add(user.member)  # Adding user to forum
+        post = Post(
+            forum=forum,
+            poster=user.member,
+            title='a',
+            content='a'
+        )
+        post.save()
+
+        self.client.login(username='hellothere', password='pass')
+        response = self.client.post(reverse('forums:upvote_post', args=(post.pk,)), follow=True)
+        self.client.logout()
+
+        self.assertEqual(response.redirect_chain[0][1], 302)
+        self.assertContains(response, "Remove Upvote")  # the button now says remove upvote instead of upvote
+        self.assertIs(Post.objects.get(pk=post.pk).points, 1) # upvoted
+        self.assertTrue(PostVote.objects.filter(
+            post__pk=post.pk, user=user).exists(),  # Vote record was created
+            True
+            )
+        self.assertIs(PostVote.objects.get(
+            post__pk=post.pk, user=user).is_upvote(), # is an upvote
+            True
+            )
 
     def test_downvote_works_fine(self):
-        pass
+        user = User(username='hellothere')
+        user.set_password('pass')
+        user.save()
+        Member.objects.create(user=user, bio='sdd')
+        forum = Forum(owner=user, name='forum1', description='sdasd')
+        forum.save()
+        forum.members.add(user.member)  # Adding user to forum
+        post = Post(
+            forum=forum,
+            poster=user.member,
+            title='a',
+            content='a'
+        )
+        post.save()
+
+        self.client.login(username='hellothere', password='pass')
+        response = self.client.post(reverse('forums:downvote_post', args=(post.pk,)), follow=True)
+        self.client.logout()
+
+        self.assertEqual(response.redirect_chain[0][1], 302)
+        self.assertContains(response, "Remove Downvote")  # the button now says remove downvote instead of upvote
+        self.assertEqual(Post.objects.get(pk=post.pk).points, -1) # downvoted
+        self.assertIs(PostVote.objects.filter(
+            post__pk=post.pk, user=user).exists(),  # Vote record was created
+            True
+            )
+        self.assertIs(PostVote.objects.get(
+            post__pk=post.pk, user=user).is_downvote(), # is a downvote
+            True
+            )
 
     def test_upvote_two_times_remove_upvote(self):
-        pass
+        '''If a user upvotes a post that was already upvoted by him, the upvote will be removed'''
+        user = User(username='hellothere')
+        user.set_password('pass')
+        user.save()
+        Member.objects.create(user=user, bio='sdd')
+        forum = Forum(owner=user, name='forum1', description='sdasd')
+        forum.save()
+        forum.members.add(user.member)  # Adding user to forum
+        post = Post(
+            forum=forum,
+            poster=user.member,
+            title='a',
+            content='a'
+        )
+        post.save()
+
+        self.client.login(username='hellothere', password='pass')
+        self.client.post(reverse('forums:upvote_post', args=(post.pk,)))  # Upvoting first time
+        self.client.post(reverse('forums:upvote_post', args=(post.pk,)))  # Second time
+        self.client.logout()
+
+        self.assertEqual(Post.objects.get(pk=post.pk).points, 0) # upvote was removed, therefore no points fot this post
+        self.assertIs(PostVote.objects.filter(
+            post__pk=post.pk, user=user).exists(),  # Vote record does not exists because it was deleted
+            False
+            )
 
     def test_downvote_two_times_remove_downvote(self):
-        pass
+        '''If a user downvotes a post that was already downvoted by him, the downvote will be removed'''
+        user = User(username='hellothere')
+        user.set_password('pass')
+        user.save()
+        Member.objects.create(user=user, bio='sdd')
+        forum = Forum(owner=user, name='forum1', description='sdasd')
+        forum.save()
+        forum.members.add(user.member)  # Adding user to forum
+        post = Post(
+            forum=forum,
+            poster=user.member,
+            title='a',
+            content='a'
+        )
+        post.save()
 
-    def test_remove_downvote_once_downvoted(self):
-        pass
+        self.client.login(username='hellothere', password='pass')
+        self.client.post(reverse('forums:downvote_post', args=(post.pk,)))  # downvoting first time
+        self.client.post(reverse('forums:downvote_post', args=(post.pk,)))  # Second time
+        self.client.logout()
 
-    def test_remove_upvote_once_upvoted(self):
-        pass
+        self.assertEqual(Post.objects.get(pk=post.pk).points, 0) # downvote was removed, therefore no points fot this post
+        self.assertIs(PostVote.objects.filter(
+            post__pk=post.pk, user=user).exists(),  # Vote record does not exists because it was deleted
+            False
+            )
     
 
 class PublishEditAndDeletePost(TestCase):
@@ -236,7 +340,8 @@ class PublishEditAndDeletePost(TestCase):
         self.client.logout()
 
         self.assertEqual(response.status_code, 403)
-        self.assertIs(forum.post_set.all().contains(post), True)  # hence post was not deleted
+        self.assertIs(forum.post_set.all().contains(post), True)  
+        # post was not posted by user, hence post was not deleted
 
     def test_edit_post_works(self):
         user = User(username='asdsa8')

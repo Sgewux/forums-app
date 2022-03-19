@@ -170,13 +170,13 @@ def upvote_post(request, post_id):
         'HTTP_REFERER', 
         reverse('forums:show_post', args=(post_id,))
         )
+    
+    post = get_object_or_404(Post, pk=post_id)
 
     if not PostVote.objects.filter(
-        post__pk = post_id, 
+        post = post, 
         user = request.user
         ).exists():  # If the user has not upvoted nor downvoted this post yet
-
-        post = get_object_or_404(Post, pk=post_id)
     
         # We create the vote record.
         PostVote.objects.create(
@@ -190,7 +190,6 @@ def upvote_post(request, post_id):
 
         return HttpResponseRedirect(redirection_url)
     else:
-        post = get_object_or_404(Post, pk=post_id)
         vote_record = PostVote.objects.get(post=post, user=request.user)
         # If user has downvoted this post before
         if vote_record.is_downvote():
@@ -219,12 +218,12 @@ def downvote_post(request, post_id):
         reverse('forums:show_post', args=(post_id,))
         )
 
+    post = get_object_or_404(Post, pk=post_id)
+
     if not PostVote.objects.filter(
         post__pk = post_id, 
         user = request.user
         ).exists(): 
-
-        post = get_object_or_404(Post, pk=post_id)
     
         PostVote.objects.create(
             post=post, user=request.user, 
@@ -236,7 +235,6 @@ def downvote_post(request, post_id):
 
         return HttpResponseRedirect(redirection_url)
     else:
-        post = get_object_or_404(Post, pk=post_id)
         vote_record = PostVote.objects.get(post=post, user=request.user)
 
         if vote_record.is_upvote():
