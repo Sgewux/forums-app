@@ -69,15 +69,29 @@ def leave_forum(request, forum_name):
 
 
 @login_required
-def create_forum(request):
+def create_forum(request):  
     if request.method == 'POST':
         try:
-            forum = Forum(
-                owner=request.user, 
-                name=request.POST['forum_name'],
-                description=request.POST['description']
+            # Using get to avoid KeyError, using strip() to remove leading spaces
+            new_forum_name = request.POST.get('forum_name', '').strip()
+            new_forum_description = request.POST.get('description', '').strip()
+
+            if new_forum_name and new_forum_description:  # True if both are NOT empty strings nor blank
+                forum = Forum(
+                    owner=request.user,
+                    name=new_forum_name,
+                    description=new_forum_description
+                    )
+                forum.save()
+            
+            else:
+                messages.add_message(
+                    request,
+                    messages.INFO,
+                    'You must provide a name and description to the new forum'
                 )
-            forum.save()
+                return render(request, 'forums/create_forum.html')
+
         except IntegrityError as e:
             # todo: once i switch to postgres i got to add here the logic for
             # a name or desc which uses a greather than permited lenght
@@ -107,7 +121,7 @@ class PostDetailView(DetailView):
 def edit_post(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
     if request.method == 'POST' and post.was_posted_by(request.user.member):
-        new_content = request.POST.get('new_content')
+        new_content = request.POST.get('new_content', '').strip()
         if new_content:
             post.edited = True
             post.content = new_content
@@ -258,9 +272,11 @@ def downvote_post(request, post_id):
 def publish_post(request, forum_name):
     forum = get_object_or_404(Forum, name=forum_name)
     if request.method == 'POST' and forum.members.contains(request.user.member):
-        title = request.POST.get('post_title')
-        content = request.POST.get('post_content')
-        if title and content:
+        # Using .get() to avoid KeyError, '' as default to avoid AtributeError
+        # .strip() to remove leading spaces
+        title = request.POST.get('post_title', '').strip()
+        content = request.POST.get('post_content', '').strip()
+        if title and content:  # True if both are NOT empty string nor blank
             post = Post(
                 forum=forum, 
                 poster=request.user.member, 
@@ -268,7 +284,6 @@ def publish_post(request, forum_name):
                 content=content
                 )
             post.save()
-
             return HttpResponseRedirect(
                 reverse('forums:show_post', args=(post.pk,))
                 )

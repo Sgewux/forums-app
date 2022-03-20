@@ -12,8 +12,8 @@ from .models import Member
 
 def login_user(request):
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
+        username = request.POST.get('username', '')
+        password = request.POST.get('password', '')
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
@@ -84,9 +84,13 @@ def show_profile(request):
 def edit_profile(request):
     if request.method == 'POST':
         member = request.user.member
-        member.bio = request.POST['new_bio']
-        member.save(update_fields=['bio'])
-
+        new_bio = request.POST.get('new_bio')
+        if new_bio:
+            member.bio = new_bio 
+            member.save(update_fields=['bio'])
+        else:
+            # TODO redirect to the edit profile form displaying an info message
+            pass
         return HttpResponseRedirect(reverse('members:profile'))
     else:
         return render(request, 'members/edit_profile.html', {

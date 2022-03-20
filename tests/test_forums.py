@@ -1,4 +1,3 @@
-from urllib import response
 from django.urls import reverse
 from django.test import TestCase
 from django.contrib.auth.models import User
@@ -62,7 +61,6 @@ class TestJoinAndLeaveForumView(TestCase):
         self.assertContains(response, 'Join comunity')
         self.assertIs(forum.members.all().contains(user.member), False)
 
-
 class TestForumCreation(TestCase):
 
     def test_forum_model_creation(self):
@@ -85,8 +83,8 @@ class TestForumCreation(TestCase):
             True
             )
 
-    def test_forum_model_creation_with_same_name(self):
-        '''If the user tries to create a forum with an already existent forums name it will display a message'''
+    def test_forum_with_saem_name_is_not_allowed(self):
+        '''If the user tries to create a forum with an already existent forums name it will not create the forum and display a message'''
         user = User(username='pedro')
         user.set_password('1234')
         user.save()
@@ -102,6 +100,26 @@ class TestForumCreation(TestCase):
 
         self.assertContains(response, 'We already have a forum with that name.')
 
+    def test_create_forum_with_empty_name_not_permited(self):
+        '''the forum creation without providing name should not be allowd'''
+        user = User(username='julianXXX')
+        user.set_password('1234')
+        user.save()
+        Member.objects.create(user=user, bio='asds')
+
+        self.client.login(username='julianXXX', password='1234')
+        response = self.client.post(reverse('forums:create_forum'), {
+            'forum_name': '    ',
+            'description': '    '
+        })
+
+        self.assertIs(
+            Forum.objects.filter(name='', description='', owner=user).exists(), 
+            False
+            )
+        self.assertContains(response, 
+        'You must provide a name and description to the new forum'
+        )
 
 class UpvoteAndDownvote(TestCase):
 
@@ -223,8 +241,7 @@ class UpvoteAndDownvote(TestCase):
         self.assertIs(PostVote.objects.filter(
             post__pk=post.pk, user=user).exists(),  # Vote record does not exists because it was deleted
             False
-            )
-    
+            )    
 
 class PublishEditAndDeletePost(TestCase):
 
@@ -281,8 +298,8 @@ class PublishEditAndDeletePost(TestCase):
 
         self.client.login(username=user.username, password='pass')
         response = self.client.post(reverse('forums:publish_post', args=(forum.name,)), {
-            'post_title': '',
-            'post_content': ''
+            'post_title': '   ',
+            'post_content': '  '
         })
         self.client.logout()
         self.assertEqual(response.status_code, 200)
@@ -390,7 +407,7 @@ class PublishEditAndDeletePost(TestCase):
 
         self.client.login(username=user.username, password='pass')
         response = self.client.post(reverse('forums:edit_post', args=(post.pk,)), {
-            'new_content': ''
+            'new_content': '   '
         })
         self.client.logout()
 
