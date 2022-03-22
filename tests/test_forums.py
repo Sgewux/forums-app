@@ -298,8 +298,27 @@ class PublishEditAndDeletePost(TestCase):
 
         self.client.login(username=user.username, password='pass')
         response = self.client.post(reverse('forums:publish_post', args=(forum.name,)), {
+            'post_title': '',
+            'post_content': ''
+        })
+        self.client.logout()
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Please fill all the fields')
+
+    def test_info_message_when_user_sent_blank_strings_when_publishing(self):
+        '''If the user sent blank strings i.e "  " when publishing we will display a message'''
+        user = User(username='asdsa8')
+        user.set_password('pass')
+        user.save()
+        Member.objects.create(user=user, bio='sdd')
+        forum = Forum(owner=user, name='forum3', description='sdasd')
+        forum.save()
+        forum.members.add(user.member)  # Adding user to forum
+
+        self.client.login(username=user.username, password='pass')
+        response = self.client.post(reverse('forums:publish_post', args=(forum.name,)), {
             'post_title': '   ',
-            'post_content': '  '
+            'post_content': '   '
         })
         self.client.logout()
         self.assertEqual(response.status_code, 200)
@@ -387,7 +406,6 @@ class PublishEditAndDeletePost(TestCase):
         self.assertEqual(edited_post.content, 'new content')
         self.assertIs(edited_post.edited, True)
 
-
     def test_edit_post_without_content_displays_message(self):
         '''If the user does not provide a new content for the post we should show a message and dont update that post'''
         user = User(username='asdsa8')
@@ -407,7 +425,35 @@ class PublishEditAndDeletePost(TestCase):
 
         self.client.login(username=user.username, password='pass')
         response = self.client.post(reverse('forums:edit_post', args=(post.pk,)), {
-            'new_content': '   '
+            'new_content': ''
+        })
+        self.client.logout()
+
+        edited_post = Post.objects.get(pk=post.pk)
+        self.assertContains(response, 'Please provide a new content for the post.')
+        self.assertEqual(edited_post.content, 'first content')  # content remains the same
+        self.assertIs(edited_post.edited, False)
+    
+    def test_edit_post_with_blank_str_as_content_displays_message(self):
+        '''If the user sends a blank string i.e "   " as a content we will display the same error msg as if the content was empty'''
+        user = User(username='asdsa8')
+        user.set_password('pass')
+        user.save()
+        Member.objects.create(user=user, bio='sdd')
+        forum = Forum(owner=user, name='forum3', description='sdasd')
+        forum.save()
+        forum.members.add(user.member)
+        post = Post(
+            forum=forum,
+            content='first content',
+            poster=user.member,
+            title='sdsds'
+            )
+        post.save()
+
+        self.client.login(username=user.username, password='pass')
+        response = self.client.post(reverse('forums:edit_post', args=(post.pk,)), {
+            'new_content': '     '
         })
         self.client.logout()
 

@@ -1,4 +1,3 @@
-from unittest import TestCase
 from django.urls import reverse
 from django.test import TestCase
 from django.contrib.auth.models import User
@@ -7,7 +6,7 @@ from members.models import Member
 
 class SingupViewTests(TestCase):
     def test_display_message_user_already_exists(self):
-        '''If we try to use a username that already exists we will se a message'''
+        '''If user tries to use a username that already exists we will se a message'''
         user = User(username='juan1')
         user.set_password('examplepasswd')
         user.save()
@@ -21,7 +20,7 @@ class SingupViewTests(TestCase):
         self.assertContains(response, 'That user already exists!')
     
     def test_display_different_passwd_message(self):
-        '''If we filled the singup form with two diferent passwords, we will see a message'''
+        '''If user filled the singup form with two diferent passwords, we will see a message'''
         
         response = self.client.post(reverse('members:singup'), {
             'username': 'roberto',
@@ -29,7 +28,31 @@ class SingupViewTests(TestCase):
             'password_again': 'secondpasswd'
             })
         
+        self.assertIs(User.objects.filter(username='roberto').exists(), False) # didnt create user
         self.assertContains(response, 'Passwords were not equal!')
+
+    def test_empty_fields_message(self):
+        '''If the user left one or more blank fields we will display a message'''
+        
+        response = self.client.post(reverse('members:singup'), {
+            'username': 'roberto',
+            'password': '',
+            'password_again': 'secondpasswd'
+            })
+        
+        self.assertIs(User.objects.filter(username='roberto').exists(), False) # didnt create user
+        self.assertContains(response, 'Please fill all the fields')
+
+    def test_blank_str_fields_message(self):
+        '''If the user left one or more blank fields we will display a message'''
+        
+        response = self.client.post(reverse('members:singup'), {
+            'username': ' ',
+            'password': 'secondpasswd',
+            'password_again': 'secondpasswd'
+            })
+        self.assertIs(User.objects.filter(username=' ').exists(), False) # didnt create user
+        self.assertContains(response, 'Please fill all the fields')
              
     def test_correct_singup_process(self):
         '''If the user properly filled the form, a Member object should be created and user should be redirected to its feed'''
@@ -67,6 +90,15 @@ class LoginViewTests(TestCase):
         response = self.client.post(reverse('members:login'), {
             'username': 'unexsistent_username',
             'password': 'unexistend_password'
+        })
+
+        self.assertContains(response, 'Unsuccesfull login, try again!')
+
+    def test_login_with_blank_strings(self):
+        '''If user sent blank strings as credentials we will show a message'''
+        response = self.client.post(reverse('members:login'), {
+            'username': '  ',
+            'password': ' '
         })
 
         self.assertContains(response, 'Unsuccesfull login, try again!')
@@ -149,6 +181,42 @@ class EditProfileViewTests(TestCase):
         self.assertEqual(
             Member.objects.get(user__username='jose').bio,
             'secondbio')
+
+    def test_show_message_if_user_left_blank_new_bio_field(self):
+        '''If user did not provide a new bio we should display a message'''
+        
+        user = User(username='jose')
+        user.set_password('1234')
+        user.save()
+        Member.objects.create(user=user, bio='firstbio')
+        self.client.login(username='jose', password='1234')
+
+        response = self.client.post(reverse('members:edit_profile'),
+        {
+            'new_bio':''
+        }, follow=True)        
+        self.client.logout()
+
+        self.assertEqual(Member.objects.get(user=user).bio, 'firstbio')  # Bio remains the same
+        self.assertContains(response, 'Please provide a new Bio')
+
+    def test_show_message_if_user_sent_blank_string_new_bio_field(self):
+        '''If user sent a blank string i.e "  " we should display a message'''
+        
+        user = User(username='jose')
+        user.set_password('1234')
+        user.save()
+        Member.objects.create(user=user, bio='firstbio')
+        self.client.login(username='jose', password='1234')
+
+        response = self.client.post(reverse('members:edit_profile'),
+        {
+            'new_bio':'   '
+        }, follow=True)        
+        self.client.logout()
+
+        self.assertEqual(Member.objects.get(user=user).bio, 'firstbio')  # Bio remains the same
+        self.assertContains(response, 'Please provide a new Bio')
 
 
 class DeleteAccountTests(TestCase):

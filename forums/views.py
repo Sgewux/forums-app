@@ -104,7 +104,7 @@ def create_forum(request):
         else:
             forum.members.add(request.user.member)  # The user who created the forum is added as a member by default
             return HttpResponseRedirect(reverse('forums:show_forum', 
-            args=(request.POST['forum_name'],))
+            args=(new_forum_name,))
             )
     else:
         return render(request, 'forums/create_forum.html', {})
@@ -276,7 +276,7 @@ def publish_post(request, forum_name):
         # .strip() to remove leading spaces
         title = request.POST.get('post_title', '').strip()
         content = request.POST.get('post_content', '').strip()
-        if title and content:  # True if both are NOT empty string nor blank
+        if all((title, content)):  # True if both are NOT empty string nor blank
             post = Post(
                 forum=forum, 
                 poster=request.user.member, 

@@ -12,8 +12,8 @@ from .models import Member
 
 def login_user(request):
     if request.method == 'POST':
-        username = request.POST.get('username', '')
-        password = request.POST.get('password', '')
+        username = request.POST.get('username')
+        password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
@@ -33,31 +33,39 @@ def login_user(request):
 def singup_user(request):
     if not request.user.is_authenticated:  #  We dont want an already logged user to create accounts
         if request.method == 'POST':
-            username = request.POST['username']
-            password = request.POST['password']
-            password_again = request.POST['password_again']
+            username = request.POST.get('username', '').strip()
+            password = request.POST.get('password', '').strip()
+            password_again = request.POST.get('password_again', '').strip()
 
-            if password == password_again:  #  The user filled the form correctly
-                user = User(username=username)
-                user.set_password(password)
-                try:
-                    user.save()
-                except IntegrityError:
+            if all((username, password, password_again)):  # The user didnt leave blank fields
+                if password == password_again:  #  The user filled the form correctly
+                    user = User(username=username)
+                    user.set_password(password)
+                    try:
+                        user.save()
+                    except IntegrityError:
+                        messages.add_message(
+                            request,
+                            messages.INFO,
+                            'That user already exists!'
+                        )
+                        return render(request, 'members/singup.html', {})
+                    else:
+                        Member.objects.create(user=user, bio='Hello everyone, i\'m using ForumsApp!')
+                        login(request, user)
+                        return HttpResponseRedirect(reverse('members:feed'))
+                else:
                     messages.add_message(
                         request,
                         messages.INFO,
-                        'That user already exists!'
+                        'Passwords were not equal!'
                     )
                     return render(request, 'members/singup.html', {})
-                else:
-                    Member.objects.create(user=user, bio='Hello everyone, i\'m using ForumsApp!')
-                    login(request, user)
-                    return HttpResponseRedirect(reverse('members:feed'))
             else:
                 messages.add_message(
                     request,
                     messages.INFO,
-                    'Passwords were not equal!'
+                    'Please fill all the fields'
                 )
                 return render(request, 'members/singup.html', {})
         else:
@@ -84,13 +92,18 @@ def show_profile(request):
 def edit_profile(request):
     if request.method == 'POST':
         member = request.user.member
-        new_bio = request.POST.get('new_bio')
+        new_bio = request.POST.get('new_bio', '').strip()
         if new_bio:
             member.bio = new_bio 
             member.save(update_fields=['bio'])
         else:
-            # TODO redirect to the edit profile form displaying an info message
-            pass
+            messages.add_message(
+                request,
+                messages.INFO,
+                'Please provide a new Bio'
+            )
+            return render(request, 'members/edit_profile.html', {})
+
         return HttpResponseRedirect(reverse('members:profile'))
     else:
         return render(request, 'members/edit_profile.html', {
@@ -101,7 +114,7 @@ def edit_profile(request):
 @login_required
 def delete_account(request):
     if request.method == 'POST':
-        if request.user.check_password(request.POST['password']):
+        if request.user.check_password(request.POST.get('password')):
             former_user = request.user
             logout(request)
             former_user.delete()
