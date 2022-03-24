@@ -32,11 +32,11 @@ class SingupViewTests(TestCase):
         self.assertContains(response, 'Passwords were not equal!')
 
     def test_empty_fields_message(self):
-        '''If the user left one or more blank fields we will display a message'''
+        '''If the user left one or more empty fields we will display a message'''
         
         response = self.client.post(reverse('members:singup'), {
             'username': 'roberto',
-            'password': '',
+            'password': ' ',
             'password_again': 'secondpasswd'
             })
         
@@ -53,6 +53,18 @@ class SingupViewTests(TestCase):
             })
         self.assertIs(User.objects.filter(username=' ').exists(), False) # didnt create user
         self.assertContains(response, 'Please fill all the fields')
+
+    def test_spaces_not_allowed_in_username(self):
+        '''If the user sent a username which contains spaces we will show a message'''
+        
+        response = self.client.post(reverse('members:singup'), {
+            'username': 'user name',
+            'password': 'secondpasswd',
+            'password_again': 'secondpasswd'
+            })
+        self.assertIs(User.objects.filter(username='user name').exists(), False) # didnt create user
+        self.assertContains(response, 'Spaces are not allowed in username')
+    
              
     def test_correct_singup_process(self):
         '''If the user properly filled the form, a Member object should be created and user should be redirected to its feed'''
@@ -64,8 +76,23 @@ class SingupViewTests(TestCase):
             })
         
         self.assertEqual(response.status_code, 302)
-        self.assertIsNotNone(User.objects.get(username='carlos'))  # User carlos exists
+        self.assertIs(User.objects.filter(username='carlos').exists(), True)  # User carlos exists
         self.assertIsNotNone(User.objects.get(username='carlos').member)  # Member object related to carlos exists
+
+    def test_correct_singup_process_with_psswd_with_spaces(self):
+        '''Spaces should NOT be removed from password nor from the begginig nor from the end nor from anywhere'''
+        
+        response = self.client.post(reverse('members:singup'), {
+            'username': 'carlos',
+            'password': ' hello world ',
+            'password_again': ' hello world '
+            })
+        
+        self.assertEqual(response.status_code, 302)
+        self.assertIs(User.objects.filter(username='carlos').exists(), True)  # User carlos exists
+        self.assertIsNotNone(User.objects.get(username='carlos').member)  # Member object related to carlos exists
+        self.assertIs(User.objects.get(username='carlos').check_password(' hello world '), True)
+
     
     def test_already_logged_user_creating_accounts(self):
         '''if a user is already logged in we dont want it to create an account, we will redirect to his feed'''

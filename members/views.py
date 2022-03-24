@@ -30,37 +30,63 @@ def login_user(request):
         return render(request, 'members/login.html', {})
 
 
+def create_new_account(request, username, password, password_again):
+    '''
+    This function will handle all the account (User/Member models pair) creation process
+    it is NOT meant to be used as a view, it will only be called inside singup_user view
+    to reduce its cognitive complexity
+    '''
+    if password == password_again and ' ' not in username:  #  The user filled the form correctly
+        user = User(username=username)
+        user.set_password(password)
+        try:
+            user.save()
+        except IntegrityError:
+            messages.add_message(
+                request,
+                messages.INFO,
+                'That user already exists!'
+            )
+            return render(request, 'members/singup.html', {})
+        else:
+            Member.objects.create(user=user, bio='Hello everyone, i\'m using ForumsApp!')
+            login(request, user)
+            return HttpResponseRedirect(reverse('members:feed'))
+
+    elif password != password_again:
+        messages.add_message(
+            request,
+            messages.INFO,
+            'Passwords were not equal!'
+        )
+        return render(request, 'members/singup.html', {})
+
+    elif ' ' in username:
+        messages.add_message(
+            request,
+            messages.INFO,
+            'Spaces are not allowed in username'
+        )
+        return render(request, 'members/singup.html', {})
+
+
 def singup_user(request):
     if not request.user.is_authenticated:  #  We dont want an already logged user to create accounts
         if request.method == 'POST':
             username = request.POST.get('username', '').strip()
-            password = request.POST.get('password', '').strip()
-            password_again = request.POST.get('password_again', '').strip()
+            password = request.POST.get('password', '')
+            password_again = request.POST.get('password_again', '')
 
-            if all((username, password, password_again)):  # The user didnt leave blank fields
-                if password == password_again:  #  The user filled the form correctly
-                    user = User(username=username)
-                    user.set_password(password)
-                    try:
-                        user.save()
-                    except IntegrityError:
-                        messages.add_message(
-                            request,
-                            messages.INFO,
-                            'That user already exists!'
-                        )
-                        return render(request, 'members/singup.html', {})
-                    else:
-                        Member.objects.create(user=user, bio='Hello everyone, i\'m using ForumsApp!')
-                        login(request, user)
-                        return HttpResponseRedirect(reverse('members:feed'))
-                else:
-                    messages.add_message(
-                        request,
-                        messages.INFO,
-                        'Passwords were not equal!'
-                    )
-                    return render(request, 'members/singup.html', {})
+            if all((
+                username, 
+                password.strip(), 
+                password_again.strip()
+                )):  # The user didnt leave blank fields
+                # Notice that due to the str inmutability, the password obj is not modified by .strip()
+                # Your passwd will remain the same, the strip is just to check if you sent a blank as passwd
+
+                return create_new_account(request, username ,password, password_again)
+
             else:
                 messages.add_message(
                     request,

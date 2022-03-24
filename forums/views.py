@@ -9,7 +9,7 @@ from django.views.decorators.http import require_POST
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 
-from .models import Forum, Post, PostVote
+from .models import Forum, Post, PostVote, TooSimilarNameException
 
 def show_forums(request):
     like = request.GET.get('q', None)
@@ -92,13 +92,14 @@ def create_forum(request):
                 )
                 return render(request, 'forums/create_forum.html')
 
-        except IntegrityError as e:
-            # todo: once i switch to postgres i got to add here the logic for
-            # a name or desc which uses a greather than permited lenght
+        # TODO: once i switch to postgres i got to add here the logic for
+        # a name or desc which uses a greather than permited lenght
+        except TooSimilarNameException as e:  # Exeption declared in forums.models.py
+
             messages.add_message(
                 request,
                 messages.INFO,
-                'We already have a forum with that name.'
+                str(e)
             )
             return render(request, 'forums/create_forum.html', {})
         else:

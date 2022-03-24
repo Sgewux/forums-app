@@ -20,7 +20,7 @@ class TestJoinAndLeaveForumView(TestCase):
         user.save()
         Member.objects.create(user=user, bio='dfsdf')
 
-        forum = Forum.objects.create(owner=owner, name='forum1', description='adfsfadf')
+        forum = Forum(owner=owner, name='fajfdnai', description='adfsfadf')
         forum.save()
 
         self.client.login(username='julian', password='1234')
@@ -46,7 +46,7 @@ class TestJoinAndLeaveForumView(TestCase):
         user.save()
         Member.objects.create(user=user, bio='dfsdf')
 
-        forum = Forum.objects.create(owner=owner, name='forum2', description='adfsfadf')
+        forum = Forum(owner=owner, name='ffuidfdf', description='adfsfadf')
         forum.save()
 
         forum.members.add(user.member)
@@ -98,7 +98,48 @@ class TestForumCreation(TestCase):
             'description': 'des'
         })
 
-        self.assertContains(response, 'We already have a forum with that name.')
+        self.assertContains(
+            response, 'We already have forums with names very similar to &quot;already exists&quot;. Try with another one'
+            )
+
+    def test_create_forum_with_too_similar_name_is_not_allowed(self):
+        '''If the user tries to create a very similar existent name forums name it will not create the forum and display a message'''
+        user = User(username='pedro')
+        user.set_password('1234')
+        user.save()
+        Member.objects.create(user=user, bio='asds')
+
+        Forum.objects.create(owner=user, name='too_similar_name', description='asdasd')
+
+        self.client.login(username='pedro', password='1234')
+        response1 = self.client.post(reverse('forums:create_forum'), {
+            'forum_name': 'TooSimilarName',
+            'description': 'des'
+        })
+
+        response2 = self.client.post(reverse('forums:create_forum'), {
+            'forum_name': 'too-similar-name2022',
+            'description': 'des'
+        })
+
+        response3 = self.client.post(reverse('forums:create_forum'), {
+            'forum_name': '~+ too_similar_name +~',
+            'description': 'des'
+        })
+
+        self.assertContains(
+            response1, 'We already have forums with names very similar to &quot;TooSimilarName&quot;. Try with another one'
+            )
+        self.assertContains(
+            response2, 'We already have forums with names very similar to &quot;too-similar-name2022&quot;. Try with another one'
+            )
+        self.assertContains(
+            response3, 'We already have forums with names very similar to &quot;~+ too_similar_name +~&quot;. Try with another one'
+            )
+        self.assertIs(Forum.objects.filter(name='TooSimilarName').exists(), False)
+        self.assertIs(Forum.objects.filter(name='too-similar-name2022').exists(), False)
+        self.assertIs(Forum.objects.filter(name='~+ too_similar_name +~').exists(), False)
+        
 
     def test_create_forum_with_empty_name_not_permited(self):
         '''the forum creation without providing name should not be allowd'''
