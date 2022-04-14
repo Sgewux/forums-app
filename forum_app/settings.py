@@ -58,7 +58,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [str( PurePath(__file__).parents[1].joinpath('templates') )],
-        'APP_DIRS': False,
+        'APP_DIRS': True,
         'OPTIONS': {
             'libraries':{
                 'vote_post_form_extras': 'templatetags.vote_post_form_extras'

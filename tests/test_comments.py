@@ -78,6 +78,34 @@ class CommentModelTests(TestCase):
             integrity_error_was_thrown=False
 
         self.assertIs(integrity_error_was_thrown, False)
+
+    def test_both_are_not_none(self):
+        '''If the comment is linked to a post and to another comment AT THE SAME TIME, integrity error must be thrown'''
+        u = User(username='usr')
+        u.set_password('pass')
+        u.save()
+
+        m = Member(user=u, bio='adasf')
+        m.save()
+
+        f = Forum(owner=u, name='a', description='afaf')
+        f.save()
+
+        p = Post(forum=f, poster=m, title='ad', content='adad')
+        p.save()
+
+        c = Comment(commenter=m, content='dfdf', post=p, in_reply_to=None)
+        c.save()
+
+
+        try:
+            Comment.objects.create(commenter=m, content='dfdf', post=p, in_reply_to=c, points=0)
+        except IntegrityError:
+            integrity_error_was_thrown=True
+        else:
+            integrity_error_was_thrown=False
+
+        self.assertIs(integrity_error_was_thrown, True)
     
     def test_user_cant_vote_a_comment_two_times(self):
         '''A user cant have two votes for the same comment'''

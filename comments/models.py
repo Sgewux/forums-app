@@ -16,16 +16,23 @@ class Comment(models.Model):
         )
     content = models.CharField(max_length=255)
     points = models.IntegerField(default=0)
+    edited = models.BooleanField(default=False)
     pub_date = models.DateTimeField('pub_date', auto_now_add=True)
         
     class Meta:
         constraints = [
-            # Ensures constraint on DB level, raises IntegrityError (500 on debug=False)
+            # Comment must be linked either to another comment or a post
             CheckConstraint(
                 check= ~(Q(post=None) & Q(in_reply_to=None)), 
                 name='check_is_linked_to_anything',
             ),
+            # But cant be linked to both
+            CheckConstraint(
+                check= ~(Q(post__isnull=False) & Q(in_reply_to__isnull=False)), 
+                name='check_aint_linked_to_both',
+            )
         ]
+
 
 class CommentVote(Vote):
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE)

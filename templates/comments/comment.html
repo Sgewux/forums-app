@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comment by: {{ commenter_username}}</title>
+</head>
+<body>
+    <div class="comment_info">
+        <strong>Written by: 
+            <a href={% url 'members:show_member' commenter_username%}>{{commenter_username}}</a>
+        </strong>
+        <br>
+        <strong>Written at: {{ comment.pub_date |date:'l, j M Y H:i'}}</strong>
+        <br>
+        {% if comment.in_reply_to %}
+            <strong>In reply to: 
+                <a href={% url 'comments:show_comment' comment.in_reply_to.pk%}>
+                    {{comment.in_reply_to.commenter.user.username}}'s comment
+                </a>
+            </strong>
+        {% elif comment.post%}
+            <strong>Commenting: 
+                <a href={% url 'forums:show_post' comment.post.pk%}>{{comment.post.title}} ({{comment.post.forum.name}})</a>
+            </strong>
+        {% endif %}
+        <br>
+        <strong>{{ comment.points }} Point{{comment.points | pluralize}}</strong>
+    </div>
+     <!--here goes voting logic-->
+
+    <div class="comment_content">
+        <p>{{comment.content}}</p>
+    </div>
+    <hr>
+    <strong>Replies:</strong>
+
+    {% include 'includes/show_replies.html' %}
+   
+</body>
+</html>
