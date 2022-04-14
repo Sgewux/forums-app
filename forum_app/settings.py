@@ -31,7 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    # 'comments.apps.CommentsConfig',
+    'comments.apps.CommentsConfig',
     'forums.apps.ForumsConfig',
     'members.apps.MembersConfig',
     'django.contrib.admin',

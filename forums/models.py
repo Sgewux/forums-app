@@ -4,7 +4,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 from members.models import Member
-from forum_app.abstract_models import Vote
+from abstract_models.vote import Vote
 
 
 class TooSimilarNameException(Exception):
