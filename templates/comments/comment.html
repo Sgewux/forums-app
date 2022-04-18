@@ -28,13 +28,13 @@
         <br>
         <strong>{{ comment.points }} Point{{comment.points | pluralize}}</strong>
     </div>
-     <!--here goes voting logic-->
+    
+    {% include 'includes/vote_root_comment_form.html' %}
 
     <div class="comment_content">
         <p>{{comment.content}}</p>
     </div>
     <hr>
-    <strong>Replies:</strong>
 
     {% include 'includes/show_replies.html' %}
    

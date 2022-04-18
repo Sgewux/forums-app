@@ -61,7 +61,8 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'libraries':{
-                'vote_post_form_extras': 'templatetags.vote_post_form_extras'
+                'vote_post_form_extras': 'templatetags.vote_post_form_extras',
+                'vote_comment_form_extras' : 'templatetags.vote_comment_form_extras'
             },
             'context_processors': [
                 'django.template.context_processors.debug',

@@ -1,16 +1,17 @@
+<strong>Replies:</strong>
 <div class="replies">
     {% if replies %}
         {% for reply in replies %}
             <br>
-            <div class="reply">
+            <div class="reply" style="padding-left: 37px;">
                 <a href={% url 'members:show_member' reply.commenter.user.username%}>{{reply.commenter.user.username}}</a>
                 <br>
                 <strong>{{ reply.points }} Point{{reply.points | pluralize}}</strong>
                 <br>
+                {% include 'includes/vote_reply_form.html' %}
+                <br>
                 <p>{{reply.content}}</p>
-
-                <!--vote form include here-->
-
+                
                 <a href={% url 'comments:show_comment' reply.pk%}>{{reply.comment_set.count}} Replies</a>
             </div>
             <br>

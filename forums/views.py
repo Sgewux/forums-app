@@ -1,9 +1,7 @@
 from django.db.models import Q
 from django.urls import reverse
 from django.contrib import messages
-from django.db.utils import IntegrityError
 from django.http import HttpResponseRedirect
-from django.views.generic.detail import DetailView
 from django.core.exceptions import PermissionDenied
 from django.views.decorators.http import require_POST
 from django.shortcuts import render, get_object_or_404
@@ -111,11 +109,21 @@ def create_forum(request):
         return render(request, 'forums/create_forum.html', {})
 
 
-class PostDetailView(DetailView):
-    model = Post
-    context_object_name = 'post'
-    template_name = 'forums/post.html'
-    pk_url_kwarg = 'post_id'  # kwarg to be used in url
+# class PostDetailView(DetailView):
+#     model = Post
+#     extra_context = {'replies': }
+#     context_object_name = 'post'
+#     template_name = 'forums/post.html'
+#     pk_url_kwarg = 'post_id'  # kwarg to be used in url
+
+def show_post(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    post_replies = post.comment_set.all()
+
+    return render(request, 'forums/post.html', {
+        'post': post,
+        'replies': post_replies
+    })
 
 
 @login_required
