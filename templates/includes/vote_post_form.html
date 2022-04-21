@@ -7,6 +7,7 @@
     <button form="upvote-post-{{post.pk}}" formmethod="post" type="submit" name="upvote">
         {% if request.user.is_authenticated %}
             {{ post|already_upvoted_by:request.user }}
+            
         {% else %}
             Upvote
         {% endif %}
@@ -18,6 +19,7 @@
     <button form="downvote-post-{{post.pk}}" formmethod="post" type="submit">
         {% if request.user.is_authenticated %}
             {{ post|already_downvoted_by:request.user }}
+            
         {% else %}
             Downvote 
         {% endif %}

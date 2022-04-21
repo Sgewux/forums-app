@@ -109,13 +109,6 @@ def create_forum(request):
         return render(request, 'forums/create_forum.html', {})
 
 
-# class PostDetailView(DetailView):
-#     model = Post
-#     extra_context = {'replies': }
-#     context_object_name = 'post'
-#     template_name = 'forums/post.html'
-#     pk_url_kwarg = 'post_id'  # kwarg to be used in url
-
 def show_post(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
     post_replies = post.comment_set.all()
@@ -180,7 +173,60 @@ def delete_post(request, post_id):
     else:
         raise PermissionDenied  # Same as 403 forbidden
 
+def do_vote_stuff(post, * , user, vote_record=None, upvoting=False, downvoting=False):
+    '''
+    Function to avoid DRY in upvote and downvote post views.
+    
+    Parameters:
+        - post: a post object (models.post) to be upvoted/downvoted
+        - User: a User object (django.contrib.auth.models.User) whos upvoting/downvoting post
+        - vote_record: a postVote object (models.postVote) if the post was already upvoted/downvoted
+        - upvoting: True if user wants to upvote post, else False
+        - downvoting: True if user wants to downvote post, else false
+    '''
+    if vote_record: # Has voted before
+        if vote_record.is_upvote():
+            if upvoting:
+                post.points -= 1  # Removing the upvote
+                vote_record.delete()
+            elif downvoting:
+                post.points -= 2  # Removing upvote effect and downvoting
 
+                vote_record.kind_of_vote = 'D'  # Updating vote record
+                vote_record.save(update_fields=['kind_of_vote'])     
+
+        elif vote_record.is_downvote():
+            if upvoting:
+                post.points += 2  # Remove downvt effects and upvoting
+
+                vote_record.kind_of_vote = 'U'  # Updating vote record
+                vote_record.save(update_fields=['kind_of_vote'])
+                
+            elif downvoting:
+                post.points += 1  # Removing the downvote
+                vote_record.delete()
+
+    else:  # Voting first time
+        if upvoting:
+            post.points += 1
+
+            # Creating vote record
+            PostVote.objects.create(
+            post=post,
+            user=user,
+            kind_of_vote='U'
+        )
+
+        elif downvoting:
+            post.points -= 1
+
+            PostVote.objects.create(
+            post=post,
+            user=user,
+            kind_of_vote='D'
+        )
+
+    post.save(update_fields=['points'])  # Saving changes
 
 @login_required
 @require_POST
@@ -196,85 +242,34 @@ def upvote_post(request, post_id):
     
     post = get_object_or_404(Post, pk=post_id)
 
-    if not PostVote.objects.filter(
-        post = post, 
-        user = request.user
-        ).exists():  # If the user has not upvoted nor downvoted this post yet
-    
-        # We create the vote record.
-        PostVote.objects.create(
-            post=post, user=request.user, 
-            kind_of_vote='U'
-            )
-
-        # Update the post points number.
-        post.points += 1
-        post.save(update_fields=['points'])
-
-        return HttpResponseRedirect(redirection_url)
-    else:
+    try:
         vote_record = PostVote.objects.get(post=post, user=request.user)
-        # If user has downvoted this post before
-        if vote_record.is_downvote():
-            post.points += 2  # Reverting the downvote effect, and then upvoting the post
-            post.save(update_fields=['points'])
+    except PostVote.DoesNotExist:
+        vote_record = None
+    
+    do_vote_stuff(post, vote_record=vote_record, user=request.user, upvoting=True)
 
-            vote_record.kind_of_vote = 'U'  # The former vote record is updated to be an upvote
-            vote_record.save(update_fields=['kind_of_vote'])
-
-            return HttpResponseRedirect(redirection_url)
-        else:
-            post.points -= 1  # If the post was already upvoted by the user, we wll remove that upvote
-            post.save(update_fields=['points'])
-
-            vote_record.delete()  # Then delete the vote_recond from db
-
-            return HttpResponseRedirect(redirection_url)
+    return HttpResponseRedirect(redirection_url)
         
 
 @login_required
 @require_POST
 def downvote_post(request, post_id):
-
     redirection_url = request.META.get(
         'HTTP_REFERER', 
         reverse('forums:show_post', args=(post_id,))
         )
 
     post = get_object_or_404(Post, pk=post_id)
-
-    if not PostVote.objects.filter(
-        post__pk = post_id, 
-        user = request.user
-        ).exists(): 
     
-        PostVote.objects.create(
-            post=post, user=request.user, 
-            kind_of_vote='D'
-            )
-
-        post.points -= 1
-        post.save(update_fields=['points'])
-
-        return HttpResponseRedirect(redirection_url)
-    else:
+    try:
         vote_record = PostVote.objects.get(post=post, user=request.user)
+    except PostVote.DoesNotExist:
+        vote_record = None
+    
+    do_vote_stuff(post, vote_record=vote_record, user=request.user, downvoting=True)
 
-        if vote_record.is_upvote():
-            post.points -= 2 
-            post.save(update_fields=['points'])
-
-            vote_record.kind_of_vote = 'D'
-            vote_record.save(update_fields=['kind_of_vote'])
-
-            return HttpResponseRedirect(redirection_url)
-        else:
-            post.points += 1
-            post.save(update_fields=['points'])
-
-            vote_record.delete()
-
-            return HttpResponseRedirect(redirection_url)
+    return HttpResponseRedirect(redirection_url)
 
 
 @login_required
