@@ -1,3 +1,5 @@
+{% load vote_comment_form_extras %}
+
 <strong>Replies:</strong>
 <div class="replies">
     {% if replies %}
@@ -8,7 +10,31 @@
                 <br>
                 <strong>{{ reply.points }} Point{{reply.points | pluralize}}</strong>
                 <br>
-                {% include 'includes/vote_reply_form.html' %}
+
+                <div class="vote-reply">
+                    <form action={% url 'comments:upvote_comment' reply.pk %} method="post" id="upvote-reply-{{reply.pk}}">
+                        {% csrf_token %}
+                    </form>
+                    <button form="upvote-reply-{{reply.pk}}" formmethod="post" type="submit" name="upvote">
+                        {% if request.user.is_authenticated %}
+                            {{ reply|already_upvoted_by:request.user }}
+                        {% else %}
+                            Upvote
+                        {% endif %}
+                    </button>
+                
+                    <form action={% url 'comments:downvote_comment' reply.pk %} method="post" id="downvote-reply-{{reply.pk}}">
+                        {% csrf_token %}
+                    </form>
+                    <button form="downvote-reply-{{reply.pk}}" formmethod="post" type="submit">
+                        {% if request.user.is_authenticated %}
+                            {{ reply|already_downvoted_by:request.user }}
+                        {% else %}
+                            Downvote 
+                        {% endif %}
+                    </button>
+                </div>
+
                 <br>
                 <p>{{reply.content}}</p>
                 

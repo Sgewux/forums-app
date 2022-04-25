@@ -4,6 +4,7 @@ from django.views.decorators.http import require_POST
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 
+from forums.models import Post
 from . models import Comment, CommentVote
 
 def show_comment(request, comment_id):
@@ -16,6 +17,7 @@ def show_comment(request, comment_id):
         'commenter_username': commenter_username,
         'replies': replies
     })
+
 
 def do_vote_stuff(comment, * , user, vote_record=None, upvoting=False, downvoting=False):
     '''
@@ -71,6 +73,28 @@ def do_vote_stuff(comment, * , user, vote_record=None, upvoting=False, downvotin
         )
 
     comment.save(update_fields=['points'])  # Saving changes
+
+
+@login_required
+@require_POST
+def reply_to_post(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    comment = Comment(
+        commenter=request.user.member, 
+        post=post,
+        content=request.POST['comment_content']
+    )
+    comment.save()
+
+    # Comments will have one upvote (made by commenter) by default
+    do_vote_stuff(comment, user=request.user, upvoting=True) 
+
+    return HttpResponseRedirect(reverse('comments:show_comment', args=(comment.pk,)))
+
+
+@login_required
+def reply_to_comment(request, comment_id):
+    pass
 
 
 @login_required

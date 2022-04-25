@@ -37,6 +37,7 @@
     </div>
 
     {% include 'includes/vote_post_form.html' %}
+    <a href={% url 'forums:reply_post' post.pk%}>Reply</a>
     <hr>
     {% include 'includes/show_replies.html' %}
 

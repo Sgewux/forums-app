@@ -7,6 +7,7 @@ urlpatterns = [
     path('', views.show_forums, name='forums_home'),
     path('create/', views.create_forum, name='create_forum'),
     path('post/<int:post_id>/', views.show_post, name='show_post'),
+    path('post/<int:post_id>/reply/', views.reply_post, name='reply_post'),
     path('post/<int:post_id>/edit', views.edit_post, name='edit_post'),
     path('post/<int:post_id>/delete', views.delete_post, name='delete_post'),
     path('post/<int:post_id>/upvote', views.upvote_post, name='upvote_post'),

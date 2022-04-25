@@ -316,3 +316,10 @@ def publish_post(request, forum_name):
             return HttpResponseRedirect(
                 reverse('forums:show_forum', args=(forum.name,))
                 )
+
+
+def reply_post(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    return render(request, 'forums/reply_post.html', {
+        'post' : post,
+    })
