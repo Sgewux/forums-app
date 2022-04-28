@@ -55,8 +55,11 @@
         </button>
     </div>
 
+
+
     <div class="comment_content">
         <p>{{comment.content}}</p>
+        <a href={% url 'comments:reply_to_comment' comment.pk %}>reply</a>
     </div>
     <hr>
 

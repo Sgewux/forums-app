@@ -37,8 +37,10 @@
 
                 <br>
                 <p>{{reply.content}}</p>
-                
+                <a href={% url 'comments:reply_to_comment' reply.pk %}>reply</a>
+                <br>
                 <a href={% url 'comments:show_comment' reply.pk%}>{{reply.comment_set.count}} Replies</a>
+                
             </div>
             <br>
         {% endfor %}

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Sending reply to {{comment.commenter}}'s comment</title>
+</head>
+<body>
+    <h1>Sending reply to {{comment.commenter}}'s comment</h1>
+    <form action={% url 'comments:reply_to_comment' comment.pk %} method="post">
+        {% csrf_token %}
+        <textarea name="comment_content" cols="30" rows="5">I think your comment is...</textarea>
+        <input type="submit" value="publish">
+    </form>
+</body>
+</html>

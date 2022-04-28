@@ -94,7 +94,20 @@ def reply_to_post(request, post_id):
 
 @login_required
 def reply_to_comment(request, comment_id):
-    pass
+    comment_to_reply = get_object_or_404(Comment, pk=comment_id)
+    if request.method == 'POST':
+        new_comment = Comment(
+            commenter=request.user.member,
+            in_reply_to=comment_to_reply,
+            content=request.POST['comment_content']
+        )
+        new_comment.save()
+        do_vote_stuff(new_comment, user=request.user, upvoting=True)
+        return HttpResponseRedirect(reverse('comments:show_comment', args=(new_comment.pk,)))
+    else:
+        return render(request, 'comments/reply_to_comment.html', {
+            'comment':comment_to_reply
+        })
 
 
 @login_required
@@ -133,3 +146,14 @@ def downvote_comment(request, comment_id):
     do_vote_stuff(comment, vote_record=vote_record, user=request.user, downvoting=True)
 
     return HttpResponseRedirect(redirection_url)
+
+
+@login_required
+@require_POST
+def delete_comment(request, comment_id):
+    pass
+
+
+@login_required
+def edit_comment(request, comment_id):
+    pass
