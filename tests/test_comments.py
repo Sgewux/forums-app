@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.urls import reverse
 from django.db.utils import IntegrityError
 from django.contrib.auth.models import User
 
@@ -134,3 +135,26 @@ class CommentModelTests(TestCase):
             integrity_error_was_thrown = False
         
         self.assertIs(integrity_error_was_thrown, True)
+
+
+class ReplyToPostAndCommentViewsTests(TestCase):
+    def test_reply_to_post_without_content_shows_message(self):
+        '''If user tried to send a message without content we will send a message'''
+        user = User(username='hellothere')
+        user.set_password('pass')
+        user.save()
+        member = Member(user=user, bio='sdd')
+        member.save()
+        forum = Forum(owner=user, name='forum1', description='sdasd')
+        forum.save()
+        forum.members.add(user.member)
+        p = Post(forum=forum, poster=member, title='ad', content='adad')
+        p.save()
+
+        self.client.login(username=user.username, password='pass')
+        response = self.client.post(reverse('comments:reply_to_post', args=(p.pk,)), {
+            'comment_content': '  '
+        },follow=True)
+
+        self.assertEqual(response.redirect_chain[0][1], 302)
+        self.assertContains(response, 'Please provide a content!')

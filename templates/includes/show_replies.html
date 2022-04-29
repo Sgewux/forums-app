@@ -34,6 +34,13 @@
                         {% endif %}
                     </button>
                 </div>
+{% comment %} 
+                {% if request.user.is_authenticated and reply.commenter == request.user.member %}
+                    <form action={% url 'comments:delete_comment' reply.pk%} method="post">
+                        {% csrf_token %}
+                        <input type="submit" value="Delete comment">
+                    </form>
+                {% endif %} {% endcomment %}
 
                 <br>
                 <p>{{reply.content}}</p>

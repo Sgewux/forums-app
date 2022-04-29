@@ -9,6 +9,7 @@
     <title>Comment by: {{ commenter_username}}</title>
 </head>
 <body>
+    {% include 'includes/messages.html' %}
     <div class="comment_info">
         <strong>Written by: 
             <a href={% url 'members:show_member' commenter_username%}>{{commenter_username}}</a>
@@ -55,7 +56,12 @@
         </button>
     </div>
 
-
+    {% comment %} {% if request.user.is_authenticated and reply.commenter == request.user.member %}
+        <form action={% url 'comments:delete_comment' reply.pk%} method="post">
+            {% csrf_token %}
+            <input type="submit" value="Delete comment">
+        </form>
+    {% endif %} {% endcomment %}
 
     <div class="comment_content">
         <p>{{comment.content}}</p>

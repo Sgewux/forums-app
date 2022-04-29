@@ -18,6 +18,9 @@ class Comment(models.Model):
     points = models.IntegerField(default=0)
     edited = models.BooleanField(default=False)
     pub_date = models.DateTimeField('pub_date', auto_now_add=True)
+
+    def was_published_by(self, member):
+        return self.commenter == member
         
     class Meta:
         constraints = [

@@ -1,5 +1,7 @@
 from django.urls import reverse
+from django.contrib import messages
 from django.http import HttpResponseRedirect
+from django.core.exceptions import PermissionDenied
 from django.views.decorators.http import require_POST
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -79,31 +81,52 @@ def do_vote_stuff(comment, * , user, vote_record=None, upvoting=False, downvotin
 @require_POST
 def reply_to_post(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
-    comment = Comment(
-        commenter=request.user.member, 
-        post=post,
-        content=request.POST['comment_content']
-    )
-    comment.save()
+    if request.POST['comment_content'].strip():
+        comment = Comment(
+            commenter=request.user.member, 
+            post=post,
+            content=request.POST['comment_content']
+        )
+        comment.save()
 
-    # Comments will have one upvote (made by commenter) by default
-    do_vote_stuff(comment, user=request.user, upvoting=True) 
+        # Comments will have one upvote (made by commenter) by default
+        do_vote_stuff(comment, user=request.user, upvoting=True) 
 
-    return HttpResponseRedirect(reverse('comments:show_comment', args=(comment.pk,)))
+        return HttpResponseRedirect(reverse('comments:show_comment', args=(comment.pk,)))
+    else:
+        messages.add_message(
+                request,
+                messages.INFO,
+                'Please provide a content!'
+        )
+        return HttpResponseRedirect(reverse('forums:reply_post', args=(post.pk,)))
 
 
 @login_required
 def reply_to_comment(request, comment_id):
     comment_to_reply = get_object_or_404(Comment, pk=comment_id)
     if request.method == 'POST':
-        new_comment = Comment(
-            commenter=request.user.member,
-            in_reply_to=comment_to_reply,
-            content=request.POST['comment_content']
-        )
-        new_comment.save()
-        do_vote_stuff(new_comment, user=request.user, upvoting=True)
-        return HttpResponseRedirect(reverse('comments:show_comment', args=(new_comment.pk,)))
+        if request.POST['comment_content'].strip():
+            new_comment = Comment(
+                commenter=request.user.member,
+                in_reply_to=comment_to_reply,
+                content=request.POST['comment_content']
+            )
+            new_comment.save()
+            do_vote_stuff(new_comment, user=request.user, upvoting=True)
+            return HttpResponseRedirect(reverse('comments:show_comment', args=(new_comment.pk,)))
+        
+        else: # User attempted to send comment withoud content
+            messages.add_message(
+                request,
+                messages.INFO,
+                'Please provide a content!'
+            )
+            
+            return render(request, 'comments/reply_to_comment.html', {
+                'comment':comment_to_reply
+            })
+
     else:
         return render(request, 'comments/reply_to_comment.html', {
             'comment':comment_to_reply
@@ -151,7 +174,26 @@ def downvote_comment(request, comment_id):
 @login_required
 @require_POST
 def delete_comment(request, comment_id):
-    pass
+    comment = get_object_or_404(Comment, pk=comment_id)
+    if comment.was_published_by(request.user.member):
+        comment.delete()
+        messages.add_message(
+            request,
+            messages.INFO,
+            'Your comment was deleted succesfully'
+        )
+
+        if comment.in_reply_to:
+            # If deleted comment was reply to another comment we redirect to that comment
+            redirection_url = reverse('comments:show_comment', args=(comment.in_reply_to.pk,))
+        else:
+            # If deleted comment was reply to post we redirect to that post
+            redirection_url = reverse('forums:show_post', args=(comment.post.pk,))
+        
+        return HttpResponseRedirect(redirection_url)
+
+    else:
+        return PermissionDenied
 
 
 @login_required

@@ -9,6 +9,7 @@
 </head>
 <body>
     <h1>Sending reply to {{comment.commenter}}'s comment</h1>
+    {% include 'includes/messages.html' %}
     <form action={% url 'comments:reply_to_comment' comment.pk %} method="post">
         {% csrf_token %}
         <textarea name="comment_content" cols="30" rows="5">I think your comment is...</textarea>

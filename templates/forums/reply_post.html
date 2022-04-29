@@ -8,6 +8,8 @@
     <title>Sending reply to: {{ post.title }}</title>
 </head>
 <body>
+    <h1>Sending reply to: {{ post.title }}</h1>
+    {% include 'includes/messages.html' %}
     <form action={% url 'comments:reply_to_post' post.pk %} method="post">
         {% csrf_token %}
         <textarea name="comment_content" cols="30" rows="5">I think your post is...</textarea>
