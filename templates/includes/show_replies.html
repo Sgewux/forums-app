@@ -7,6 +7,10 @@
             <br>
             <div class="reply" style="padding-left: 37px;">
                 <a href={% url 'members:show_member' reply.commenter.user.username%}>{{reply.commenter.user.username}}</a>
+                {% if reply.edited %}
+                    <strong>(edited)</strong>
+                {% endif %}
+                
                 <br>
                 <strong>{{ reply.points }} Point{{reply.points | pluralize}}</strong>
                 <br>
@@ -34,16 +38,18 @@
                         {% endif %}
                     </button>
                 </div>
-{% comment %} 
+
+                <br>
+                <p>{{reply.content}}</p>
+
                 {% if request.user.is_authenticated and reply.commenter == request.user.member %}
                     <form action={% url 'comments:delete_comment' reply.pk%} method="post">
                         {% csrf_token %}
                         <input type="submit" value="Delete comment">
                     </form>
-                {% endif %} {% endcomment %}
-
+                    <a href={% url 'comments:edit_comment' reply.pk%}>Edit</a>
+                {% endif %} 
                 <br>
-                <p>{{reply.content}}</p>
                 <a href={% url 'comments:reply_to_comment' reply.pk %}>reply</a>
                 <br>
                 <a href={% url 'comments:show_comment' reply.pk%}>{{reply.comment_set.count}} Replies</a>

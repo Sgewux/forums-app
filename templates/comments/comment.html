@@ -14,6 +14,9 @@
         <strong>Written by: 
             <a href={% url 'members:show_member' commenter_username%}>{{commenter_username}}</a>
         </strong>
+        {% if comment.edited %}
+            <strong>(edited)</strong>
+        {% endif %}
         <br>
         <strong>Written at: {{ comment.pub_date |date:'l, j M Y H:i'}}</strong>
         <br>
@@ -56,12 +59,13 @@
         </button>
     </div>
 
-    {% comment %} {% if request.user.is_authenticated and reply.commenter == request.user.member %}
-        <form action={% url 'comments:delete_comment' reply.pk%} method="post">
+    {% if request.user.is_authenticated and comment.commenter == request.user.member %}
+        <a href={% url 'comments:edit_comment' comment.pk%}>Edit</a>
+        <form action={% url 'comments:delete_comment' comment.pk%} method="post">
             {% csrf_token %}
             <input type="submit" value="Delete comment">
         </form>
-    {% endif %} {% endcomment %}
+    {% endif %} 
 
     <div class="comment_content">
         <p>{{comment.content}}</p>

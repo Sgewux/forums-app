@@ -1,14 +1,17 @@
+from django.db.models import Q
 from django.urls import reverse
 from django.contrib import messages
 from django.db.utils import IntegrityError
 from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 
-from forums.models import Post
 from .models import Member
+from forums.models import Post
+from comments.models import Comment
+
 
 def login_user(request):
     if request.method == 'POST':
@@ -166,8 +169,17 @@ def user_feed(request):
             (SELECT MAX(id) FROM forums_post WHERE forum_id IN \
             (SELECT forum_id FROM forums_forum_members WHERE member_id = {request.user.pk})\
             GROUP BY forum_id);')
+    
+    # The most recent comments posted as a reply to a comment made by the user or a post
+    latest_replies = Comment.objects.filter(
+        (Q(post__poster=request.user.member) | Q(in_reply_to__commenter=request.user.member))
+        &
+        ~Q(commenter=request.user.member)
+    ).order_by('-pub_date')[:3]
+
     return render(request, 'members/feed.html', {
-        'posts_to_show': latest_posts
+        'posts_to_show': latest_posts,
+        'replies': latest_replies  # Naming context as "replies" to be able to include show_replies.html into feed template
     })
 
 

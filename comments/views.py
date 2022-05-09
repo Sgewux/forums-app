@@ -106,11 +106,12 @@ def reply_to_post(request, post_id):
 def reply_to_comment(request, comment_id):
     comment_to_reply = get_object_or_404(Comment, pk=comment_id)
     if request.method == 'POST':
-        if request.POST['comment_content'].strip():
+        content = request.POST.get('comment_content','').strip()
+        if content:
             new_comment = Comment(
                 commenter=request.user.member,
                 in_reply_to=comment_to_reply,
-                content=request.POST['comment_content']
+                content=content
             )
             new_comment.save()
             do_vote_stuff(new_comment, user=request.user, upvoting=True)
@@ -198,4 +199,30 @@ def delete_comment(request, comment_id):
 
 @login_required
 def edit_comment(request, comment_id):
-    pass
+    comment = get_object_or_404(Comment, pk=comment_id)
+    if request.method == 'POST' and comment.was_published_by(request.user.member):
+        new_content = request.POST.get('new_content', '').strip()
+        if new_content:
+            comment.content = new_content
+            comment.edited = True
+            comment.save(update_fields=('content', 'edited'))
+
+            return HttpResponseRedirect(reverse('comments:show_comment', args=(comment.pk,)))
+        else:
+            messages.add_message(
+                request,
+                messages.INFO,
+                'Please provide a content.'
+            )
+
+            return render(request, 'comments/edit_comment.html', {
+                'comment':comment
+            })
+    
+    else:
+        if not comment.was_published_by(request.user.member):
+            raise PermissionDenied
+        else:
+            return render(request, 'comments/edit_comment.html', {
+                'comment':comment
+            })

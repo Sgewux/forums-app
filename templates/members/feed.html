@@ -12,5 +12,8 @@
     </header>
     <h1>Welcome to your Feed {{ request.user.username }}!</h1>
     {% include 'includes/show_posts.html' %}
+    <hr>
+    <h1>Most recent replies to your posts/comments</h1>
+    {% include 'includes/show_replies.html' %}
 </body>
 </html>
