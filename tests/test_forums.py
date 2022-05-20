@@ -217,7 +217,7 @@ class UpvoteAndDownvote(TestCase):
         self.client.logout()
 
         self.assertEqual(response.redirect_chain[0][1], 302)
-        self.assertContains(response, "Remove Downvote")  # the button now says remove downvote instead of upvote
+        self.assertContains(response, "Remove Downvote")  # the button now says remove downvote instead of downvote
         self.assertEqual(Post.objects.get(pk=post.pk).points, -1) # downvoted
         self.assertIs(PostVote.objects.filter(
             post__pk=post.pk, user=user).exists(),  # Vote record was created
@@ -227,6 +227,7 @@ class UpvoteAndDownvote(TestCase):
             post__pk=post.pk, user=user).is_downvote(), # is a downvote
             True
             )
+
 
     def test_upvote_two_times_remove_upvote(self):
         '''If a user upvotes a post that was already upvoted by him, the upvote will be removed'''
@@ -247,7 +248,7 @@ class UpvoteAndDownvote(TestCase):
 
         self.client.login(username='hellothere', password='pass')
         self.client.post(reverse('forums:upvote_post', args=(post.pk,)))  # Upvoting first time
-        self.client.post(reverse('forums:upvote_post', args=(post.pk,)))  # Second time
+        response = self.client.post(reverse('forums:upvote_post', args=(post.pk,)), follow=True)  # Second time
         self.client.logout()
 
         self.assertEqual(Post.objects.get(pk=post.pk).points, 0) # upvote was removed, therefore no points fot this post
@@ -255,6 +256,8 @@ class UpvoteAndDownvote(TestCase):
             post__pk=post.pk, user=user).exists(),  # Vote record does not exists because it was deleted
             False
             )
+        self.assertNotContains(response, 'Remove Upvote')
+        self.assertNotContains(response, 'Remove Downvote')
 
     def test_downvote_two_times_remove_downvote(self):
         '''If a user downvotes a post that was already downvoted by him, the downvote will be removed'''
@@ -275,14 +278,16 @@ class UpvoteAndDownvote(TestCase):
 
         self.client.login(username='hellothere', password='pass')
         self.client.post(reverse('forums:downvote_post', args=(post.pk,)))  # downvoting first time
-        self.client.post(reverse('forums:downvote_post', args=(post.pk,)))  # Second time
+        response = self.client.post(reverse('forums:downvote_post', args=(post.pk,)), follow=True)  # Second time
         self.client.logout()
 
         self.assertEqual(Post.objects.get(pk=post.pk).points, 0) # downvote was removed, therefore no points fot this post
         self.assertIs(PostVote.objects.filter(
             post__pk=post.pk, user=user).exists(),  # Vote record does not exists because it was deleted
             False
-            )    
+            )
+        self.assertNotContains(response, 'Remove Upvote')
+        self.assertNotContains(response, 'Remove Downvote')
 
 class PublishEditAndDeletePost(TestCase):
 

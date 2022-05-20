@@ -194,7 +194,7 @@ def delete_comment(request, comment_id):
         return HttpResponseRedirect(redirection_url)
 
     else:
-        return PermissionDenied
+        raise PermissionDenied
 
 
 @login_required

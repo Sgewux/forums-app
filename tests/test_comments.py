@@ -269,9 +269,9 @@ class UpvoteAndDownvote(TestCase):
                 ).exists(),
                 True
             )
+        self.assertEqual(Comment.objects.get(pk=c.pk).points, 1)
         self.assertEqual(response.redirect_chain[0][1], 302)  # redirection
         self.assertContains(response, 'Remove Upvote')
-        
 
     
     def test_downvote_comment_works(self):
@@ -298,6 +298,7 @@ class UpvoteAndDownvote(TestCase):
                 ).exists(),
                 True
             )
+        self.assertEqual(Comment.objects.get(pk=c.pk).points, -1)
         self.assertEqual(response.redirect_chain[0][1], 302)  # redirection
         self.assertContains(response, 'Remove Downvote')
 
@@ -326,6 +327,7 @@ class UpvoteAndDownvote(TestCase):
                 ).exists(),
                 False
             )
+        self.assertEqual(Comment.objects.get(pk=c.pk).points, 0)
         self.assertEqual(response.redirect_chain[0][1], 302)  # redirection
         # buttons in normal state
         self.assertNotContains(response, 'Remove Upvote')
@@ -357,6 +359,7 @@ class UpvoteAndDownvote(TestCase):
                 ).exists(),
                 False
             )
+        self.assertEqual(Comment.objects.get(pk=c.pk).points, 0)
         self.assertEqual(response.redirect_chain[0][1], 302)  # redirection
         # buttons in normal state
         self.assertNotContains(response, 'Remove Upvote')
@@ -375,7 +378,7 @@ class EditCommentView(TestCase):
         forum.members.add(user.member)
         p = Post(forum=forum, poster=member, title='ad', content='adad')
         p.save()
-        c = Comment(commenter=member, post=p, content='adfdf')
+        c = Comment(commenter=member, post=p, content='old content')
         c.save()
 
         self.client.login(username=user.username, password='pass')
@@ -389,7 +392,101 @@ class EditCommentView(TestCase):
         self.assertContains(response, 'newly edited comment')
 
     def test_cant_edit_comment_aint_yours(self):
-        pass
+        user = User(username='hellothere')
+        user.set_password('pass')
+        user.save()
+        member = Member(user=user, bio='sdd')
+        member.save()
+        forum = Forum(owner=user, name='forum1', description='sdasd')
+        forum.save()
+        forum.members.add(user.member)
+        p = Post(forum=forum, poster=member, title='ad', content='adad')
+        p.save()
+        c = Comment(commenter=member, post=p, content='old content')
+        c.save()
+
+        # Creating second user
+
+        user2 = User(username='username2')
+        user2.set_password('pass')
+        user2.save()
+        Member.objects.create(user=user2, bio='adfa')
+
+        self.client.login(username=user2.username, password='pass')
+        response = self.client.post(reverse('comments:edit_comment', args=(c.pk,)), {
+            'new_content': 'afadfagagda'
+        })
+
+        self.assertEqual(response.status_code, 403)  # forbidden http error
+        self.assertEqual(Comment.objects.get(pk=c.pk).content, 'old content')
 
     def test_edit_comment_withoud_content_shows_message(self):
-        pass
+        user = User(username='hellothere')
+        user.set_password('pass')
+        user.save()
+        member = Member(user=user, bio='sdd')
+        member.save()
+        forum = Forum(owner=user, name='forum1', description='sdasd')
+        forum.save()
+        forum.members.add(user.member)
+        p = Post(forum=forum, poster=member, title='ad', content='adad')
+        p.save()
+        c = Comment(commenter=member, post=p, content='old content')
+        c.save()
+
+        self.client.login(username=user.username, password='pass')
+        response = self.client.post(reverse('comments:edit_comment', args=(c.pk,)), {
+            'new_content': '  '
+        })
+
+        self.assertEqual(Comment.objects.get(pk=c.pk).content, 'old content')  # content remains the same
+        self.assertContains(response, 'Please provide a content.')  # message was shown
+
+
+class DeleteCommentView(TestCase):
+    def test_delete_comment_works(self):
+        user = User(username='hellothere')
+        user.set_password('pass')
+        user.save()
+        member = Member(user=user, bio='sdd')
+        member.save()
+        forum = Forum(owner=user, name='forum1', description='sdasd')
+        forum.save()
+        forum.members.add(user.member)
+        p = Post(forum=forum, poster=member, title='ad', content='adad')
+        p.save()
+        c = Comment(commenter=member, post=p, content='old content')
+        c.save()
+
+        self.client.login(username=user.username, password='pass')
+        response = self.client.post(reverse('comments:delete_comment', args=(c.pk,)), follow=True)
+
+        self.assertIs(Comment.objects.all().contains(c), False) # comment was deleted
+        self.assertContains(response, 'Your comment was deleted succesfully')
+
+    def test_cant_delete_comment_aint_yours(self):
+        user = User(username='hellothere')
+        user.set_password('pass')
+        user.save()
+        member = Member(user=user, bio='sdd')
+        member.save()
+        forum = Forum(owner=user, name='forum1', description='sdasd')
+        forum.save()
+        forum.members.add(user.member)
+        p = Post(forum=forum, poster=member, title='ad', content='adad')
+        p.save()
+        c = Comment(commenter=member, post=p, content='old content')
+        c.save()
+
+        # Creating second user
+
+        user2 = User(username='username2')
+        user2.set_password('pass')
+        user2.save()
+        Member.objects.create(user=user2, bio='adfa')
+
+        self.client.login(username=user2.username, password='pass')
+        response = self.client.post(reverse('comments:delete_comment', args=(c.pk,)))
+
+        self.assertEqual(response.status_code, 403)
+        self.assertIs(Comment.objects.contains(c), True) # comment was not deleted
