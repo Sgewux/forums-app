@@ -1,0 +1,40 @@
+body {
+    background-color: #F2F2F2;
+}
+
+.info {
+    text-align: center;
+}
+
+.no-forums-message {
+    text-align: center;
+    font-size: large;
+}
+
+input {
+    padding: auto;
+    width: 30%;
+    margin: 8px;
+    border: 2px solid black;
+    border-radius: 4px;
+}
+
+input[type=submit] {
+    font-size: large;
+    background-color: #04AA6D;
+    cursor: pointer;
+    padding: 8  px 32px;
+    text-decoration: none;
+    margin: 4px 2px;
+    color: white;
+    border-radius: 5%;
+}
+
+.forum-container {
+    padding-left: 1cm;
+    margin-top: 1cm;
+    margin-left: 1cm;
+    margin-bottom: 1cm;
+    background-color: white;
+}
+

@@ -1,0 +1,31 @@
+body {
+    background-color: #F2F2F2;
+}
+input {
+    padding: auto;
+    width: 100%;
+    margin: 8px;
+    border: 2px solid black;
+    border-radius: 4px;
+}
+
+input[type=submit] {
+    font-size: large;
+    background-color: #04AA6D;
+    cursor: pointer;
+    padding: 8  px 32px;
+    text-decoration: none;
+    margin: 4px 2px;
+    color: white;
+    border-radius: 5%;
+}
+
+form {
+    padding: 3%;
+    text-align: center;
+    color: black;
+    margin-top: 2cm;
+    margin-left: 10cm;
+    margin-right: 10cm;
+    background-color: white;
+}

@@ -1,30 +1,37 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href={% static 'css/forms.css' %}>
     <title>Singup</title>
 </head>
 <body>
-   <form action="{% url 'members:singup' %}" method="post">
-       {% csrf_token %}
-       <fieldset>
-            <legend><h1>Create Account</h1></legend>
-            <label for="username">Username</label>
-            <input type="text" name="username">
-            <br>
-            <label for="password"> You Password</label>
-            <input type="password" name="password" id="password">
-            <br>
-            <label for="password_again">Your Password again</label>
-            <input type="password" name="password_again" id="password">
 
-            {% include 'includes/messages.html' %}
-            
-       </fieldset>
-
-       <input type="submit" value="Create Account">
-   </form> 
+    <div class="singup-form">
+        <form action="{% url 'members:singup' %}" method="post">
+            {% csrf_token %}
+            <fieldset>
+                 <legend><h1>Create Account</h1></legend>
+                 {% include 'includes/messages.html' %}
+                 <label for="username">Username</label>
+                 <input type="text" name="username">
+                 <br>
+                 <label for="password"> You Password</label>
+                 <input type="password" name="password" id="password">
+                 <br>
+                 <label for="password_again">Your Password again</label>
+                 <input type="password" name="password_again" id="password">
+     
+                
+                 
+            </fieldset>
+     
+            <input type="submit" value="Create Account">
+        </form> 
+    </div>
+   
 </body>
 </html>

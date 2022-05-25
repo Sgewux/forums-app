@@ -74,6 +74,8 @@ TEMPLATES = [
     },
 ]
 
+STATICFILES_DIRS = [str( PurePath(__file__).parents[1].joinpath('static') )]
+
 WSGI_APPLICATION = 'forum_app.wsgi.application'
 
 
