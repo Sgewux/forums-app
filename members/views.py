@@ -59,7 +59,7 @@ def create_new_account(request, username, password, password_again):
     elif password != password_again:
         messages.add_message(
             request,
-            messages.INFO,
+            messages.ERROR,
             'Passwords were not equal!'
         )
         return render(request, 'members/singup.html', {})
@@ -93,7 +93,7 @@ def singup_user(request):
             else:
                 messages.add_message(
                     request,
-                    messages.INFO,
+                    messages.ERROR,
                     'Please fill all the fields'
                 )
                 return render(request, 'members/singup.html', {})

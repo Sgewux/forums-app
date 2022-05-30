@@ -1,7 +1,6 @@
 <div class="posts">
     {% if posts_to_show %}
         {% for post in posts_to_show %}
-            <hr>
 
             <div class="post-{{post.pk}}">
                 <h2><a href={% url 'forums:show_post' post.pk%}>{{ post.title }}</a></h2>

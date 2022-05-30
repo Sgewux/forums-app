@@ -1,11 +1,10 @@
 {% load vote_comment_form_extras %}
 
-<strong>Replies:</strong>
 <div class="replies">
     {% if replies %}
         {% for reply in replies %}
             <br>
-            <div class="reply" style="padding-left: 37px;">
+            <div class="reply">
                 <a href={% url 'members:show_member' reply.commenter.user.username%}>{{reply.commenter.user.username}}</a>
                 {% if reply.edited %}
                     <strong>(edited)</strong>

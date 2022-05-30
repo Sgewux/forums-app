@@ -1,0 +1,11 @@
+.messages{
+    list-style: none;
+}
+
+.message-info{
+    background-color: rgba(42, 147, 233, 0.5);
+}
+
+.message-error{
+    background-color: rgba(255, 0, 0, 0.5);
+}
