@@ -1,54 +1,61 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href={% static 'css/forum.css' %}>
+    <link rel="stylesheet" href={% static 'css/messages.css' %}>
     <title>{{ forum.name }}</title>
 </head>
 <body>
     {% include 'includes/messages.html' %}
+    
+    <div class="forum-info">
+        <h1>{{ forum.name }}</h1>
 
-    <h1>{{ forum.name }}</h1>
-    <hr>
+        <div class="about">
+            <p>{{ forum.description }}</p>
+            <strong>Created by: <a href= {% url 'members:show_member' forum.owner.username%}>{{ forum.owner.username }}</a></strong>
+            <br>
+            <strong>Created at: {{ forum.creation_date }}</strong>
+            <br>
+            <strong>{{ forum.members.count }} member{{ forum.members.count | pluralize }}</strong>
+            <br>
+        </div>
 
-    <div class="about">
-        <h3>About the comunity</h3>
-        <p>{{ forum.description }}</p>
-        <strong>Created by: <a href= {% url 'members:show_member' forum.owner.username%}>{{ forum.owner.username }}</a></strong>
-        <br>
-        <strong>Created at: {{ forum.creation_date }}</strong>
-        <br>
-        <strong>{{ forum.members.count }} member{{ forum.members.count | pluralize }}</strong>
-        <br>
-    </div>
 
-    {% if member_belongs %}
-    <form action={% url 'forums:leave_forum' forum.name  %} method="post" id="join-or-leave-forum">
-        {% csrf_token %}
-    </form>
-    {% else %}
-        <form action={% url 'forums:join_forum' forum.name  %} method="post" id="join-or-leave-forum">
+
+        {% if member_belongs %}
+        <form action={% url 'forums:leave_forum' forum.name  %} method="post" id="join-or-leave-forum">
             {% csrf_token %}
         </form>
-    {% endif %}
-
-    <button form="join-or-leave-forum" formmethod="post" type="submit">
-        {% if member_belongs %}
-            Leave comunity
         {% else %}
-            Join comunity
+            <form action={% url 'forums:join_forum' forum.name  %} method="post" id="join-or-leave-forum">
+                {% csrf_token %}
+            </form>
         {% endif %}
-    </button>
 
-    <a href={% url 'forums:publish_post' forum.name%}>Post something</a>
+        <button form="join-or-leave-forum" formmethod="post" type="submit" class="join-or-leave-button">
+            {% if member_belongs %}
+                Leave comunity
+            {% else %}
+                Join comunity
+            {% endif %}
+        </button>
 
-    <hr>
+        <a href={% url 'forums:publish_post' forum.name%}>Post something</a>
 
-    <form action="" method="get">
-        <input type="text" name="q" placeholder="search in {{ forum.name }}">
-        <input type="submit">
-    </form>
+        <form action="" method="get" class="search-in-forum">
+            <input type="text" name="q" placeholder="search in {{ forum.name }}">
+            <br>
+            <input type="submit" value="Search">
+        </form>
+    </div>
+
+
+
     
     {% include 'includes/show_posts.html' %}
 </body>

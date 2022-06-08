@@ -47,7 +47,7 @@ def create_new_account(request, username, password, password_again):
         except IntegrityError:
             messages.add_message(
                 request,
-                messages.INFO,
+                messages.ERROR,
                 'That user already exists!'
             )
             return render(request, 'members/singup.html', {})

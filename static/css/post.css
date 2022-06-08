@@ -1,0 +1,17 @@
+body {
+    background-color: #F2F2F2;
+}
+
+.delete-post-button{
+    background-color: rgb(204, 0, 0);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.reply {
+    padding: 5px;
+    background-color: white;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    margin-left: 30px;
+}

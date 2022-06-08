@@ -1,0 +1,33 @@
+body {
+    background-color: #F2F2F2;
+}
+
+input {
+    padding: auto;
+    width: 30%;
+    margin: 8px;
+    border: 2px solid black;
+    border-radius: 4px;
+}
+
+.forum-info{
+    text-align: center;
+}
+
+input[type=submit] {
+    font-size: large;
+    width: 15%;
+    background-color: #04AA6D;
+    cursor: pointer;
+    padding: 8  px 32px;
+    text-decoration: none;
+    margin: 4px 2px;
+    color: white;
+    border-radius: 5%;
+}
+
+div[class^='post-']{
+    margin: 15px;
+    padding: 5px;
+    background-color: white;
+}
