@@ -1,6 +1,12 @@
 body {
     background-color: #F2F2F2;
 }
+h1{
+    text-align: center;
+}
+fieldset{
+    border: 0;
+}
 input {
     padding: auto;
     width: 100%;
@@ -8,6 +14,15 @@ input {
     border: 2px solid black;
     border-radius: 4px;
 }
+
+textarea{
+    padding: auto;
+    width: 100%;
+    margin: 8px;
+    border: 2px solid black;
+    border-radius: 4px;
+}
+
 
 input[type=submit] {
     font-size: large;
@@ -19,6 +34,8 @@ input[type=submit] {
     color: white;
     border-radius: 5%;
 }
+
+
 
 form {
     padding: 3%;

@@ -1,26 +1,29 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href={% static 'css/forms.css' %}>
+    <link rel="stylesheet" href={% static 'css/messages.css' %}>
     <title>Post in {{ forum_name }}</title>
 </head>
 <body>
     <h1>Post in {{forum_name}}</h1>
     <form action={% url 'forums:publish_post' forum_name %} method="post">
         {% csrf_token %}
-        <fieldset>
-            <label for="post_title">Title</label>
-            <br>
-            <input type="text" name="post_title" id="post_title">
-            <br>
-            <label for="post_content">Content</label>
-            <br>
-            <textarea name="post_content" id="post_content" cols="30" rows="5">Hello dear {{forum_name}} forum...</textarea>  
-            
-            {% include 'includes/messages.html' %}
-        </fieldset>
+
+        <label for="post_title">Title</label>
+        <br>
+        <input type="text" name="post_title" id="post_title">
+        <br>
+        <label for="post_content">Content</label>
+        <br>
+        <textarea name="post_content" id="post_content" cols="30" rows="5">Hello dear {{forum_name}} forum...</textarea>  
+        
+        {% include 'includes/messages.html' %}
+
         <input type="submit">
     </form>
 </body>

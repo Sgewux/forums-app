@@ -4,7 +4,7 @@
     <form action={% url 'forums:upvote_post' post.pk %} method="post" id="upvote-post-{{post.pk}}">
         {% csrf_token %}
     </form>
-    <button form="upvote-post-{{post.pk}}" formmethod="post" type="submit" name="upvote">
+    <button form="upvote-post-{{post.pk}}" formmethod="post" type="submit" name="upvote" class="upvote-button">
         {% if request.user.is_authenticated %}
             {{ post|already_upvoted_by:request.user }}
             
@@ -16,7 +16,7 @@
     <form action={% url 'forums:downvote_post' post.pk %} method="post" id="downvote-post-{{post.pk}}">
         {% csrf_token %}
     </form>
-    <button form="downvote-post-{{post.pk}}" formmethod="post" type="submit">
+    <button form="downvote-post-{{post.pk}}" formmethod="post" type="submit" class="downvote-button">
         {% if request.user.is_authenticated %}
             {{ post|already_downvoted_by:request.user }}
             

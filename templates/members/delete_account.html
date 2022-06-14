@@ -1,25 +1,28 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href={% static 'css/forms.css' %}>
+    <link rel="stylesheet" href={% static 'css/messages.css' %}>
     <title>Delete Account</title>
 </head>
 <body>
     <h1>Danger Zone!</h1>
-    <p>You're about to: <strong>delete your account in a permanent way!</strong> 
-        afeter pressing "delete account" button with your correct password you wont be able to login again!
-    </p>
 
     <form action={% url 'members:delete_account' %} method="post">
         {% csrf_token %}
+        <p>You're about to: <strong>delete your account in a permanent way!</strong> 
+            after pressing "delete account" button with your correct password you wont be able to login again!
+        </p>
         <label for="password">Password</label>
         <input type="password" name="password">
 
         {% include 'includes/messages.html' %}
 
-        <input type="submit" value="Delete Account">
+        <input type="submit" value="Delete Account" class="delete-account">
     </form>
 
     <p>We're gonna mis you :(</p>

@@ -9,3 +9,7 @@
 .message-error{
     background-color: rgba(255, 0, 0, 0.5);
 }
+
+.message-success{
+    background-color: rgba(129, 247, 33, 00.5);
+}

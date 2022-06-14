@@ -110,9 +110,14 @@ def logout_user(request):
 
 @login_required
 def show_profile(request):
+    user = request.user
+    member = user.member
+    recent_posts = member.post_set.order_by('-pub_date')[:5]
+
     return render(request, 'members/profile.html', {
-        'user_name': request.user.username,
-        'bio_content':request.user.member.bio,
+        'user_name': user.username,
+        'bio_content':member.bio,
+        'posts_to_show': recent_posts,
         'is_owner': True
     })
 
@@ -125,6 +130,11 @@ def edit_profile(request):
         if new_bio:
             member.bio = new_bio 
             member.save(update_fields=['bio'])
+            messages.add_message(
+                request,
+                messages.SUCCESS,
+                'Profile updated successfully!'
+            )
         else:
             messages.add_message(
                 request,
@@ -189,8 +199,11 @@ def show_member(request, member_username):
         return HttpResponseRedirect(reverse('members:profile'))
     else:
         user = get_object_or_404(User, username=member_username)
+        member = user.member
+        recent_posts = member.post_set.order_by('-pub_date')[:5]
         return render(request, 'members/profile.html', {
             'user_name': user.username,
-            'bio_content': user.member.bio,
+            'bio_content': member.bio,
+            'posts_to_show': recent_posts,
             'is_owner': False
         })

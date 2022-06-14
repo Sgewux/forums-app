@@ -1,0 +1,9 @@
+body {
+    background-color: #F2F2F2;
+}
+
+div[class^='post-']{
+    margin: 15px;
+    padding: 5px;
+    background-color: white;
+}

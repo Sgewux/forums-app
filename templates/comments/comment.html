@@ -1,3 +1,4 @@
+{% load static %}
 {% load vote_comment_form_extras %}
 
 <!DOCTYPE html>
@@ -6,6 +7,8 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href={% static 'css/buttons.css' %}>
+    <link rel="stylesheet" href={% static 'css/comment.css' %}>
     <title>Comment by: {{ commenter_username}}</title>
 </head>
 <body>
@@ -39,7 +42,7 @@
         <form action={% url 'comments:upvote_comment' comment.pk %} method="post" id="upvote-comment-{{comment.pk}}">
             {% csrf_token %}
         </form>
-        <button form="upvote-comment-{{comment.pk}}" formmethod="post" type="submit" name="upvote">
+        <button form="upvote-comment-{{comment.pk}}" formmethod="post" type="submit" name="upvote" class="upvote-button">
             {% if request.user.is_authenticated %}
                 {{ comment|already_upvoted_by:request.user }}
             {% else %}
@@ -50,7 +53,7 @@
         <form action={% url 'comments:downvote_comment' comment.pk %} method="post" id="downvote-comment-{{comment.pk}}">
             {% csrf_token %}
         </form>
-        <button form="downvote-comment-{{comment.pk}}" formmethod="post" type="submit">
+        <button form="downvote-comment-{{comment.pk}}" formmethod="post" type="submit" class="downvote-button">
             {% if request.user.is_authenticated %}
                 {{ comment|already_downvoted_by:request.user }}
             {% else %}
@@ -63,7 +66,7 @@
         <a href={% url 'comments:edit_comment' comment.pk%}>Edit</a>
         <form action={% url 'comments:delete_comment' comment.pk%} method="post">
             {% csrf_token %}
-            <input type="submit" value="Delete comment">
+            <input type="submit" value="Delete comment" class="delete-comment-button">
         </form>
     {% endif %} 
 
@@ -71,7 +74,7 @@
         <p>{{comment.content}}</p>
         <a href={% url 'comments:reply_to_comment' comment.pk %}>reply</a>
     </div>
-    <hr>
+
 
     {% include 'includes/show_replies.html' %}
    

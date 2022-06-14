@@ -18,7 +18,7 @@
                     <form action={% url 'comments:upvote_comment' reply.pk %} method="post" id="upvote-reply-{{reply.pk}}">
                         {% csrf_token %}
                     </form>
-                    <button form="upvote-reply-{{reply.pk}}" formmethod="post" type="submit" name="upvote">
+                    <button form="upvote-reply-{{reply.pk}}" formmethod="post" type="submit" name="upvote" class="upvote-button">
                         {% if request.user.is_authenticated %}
                             {{ reply|already_upvoted_by:request.user }}
                         {% else %}
@@ -29,7 +29,7 @@
                     <form action={% url 'comments:downvote_comment' reply.pk %} method="post" id="downvote-reply-{{reply.pk}}">
                         {% csrf_token %}
                     </form>
-                    <button form="downvote-reply-{{reply.pk}}" formmethod="post" type="submit">
+                    <button form="downvote-reply-{{reply.pk}}" formmethod="post" type="submit" class="downvote-button">
                         {% if request.user.is_authenticated %}
                             {{ reply|already_downvoted_by:request.user }}
                         {% else %}
